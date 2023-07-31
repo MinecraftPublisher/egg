@@ -12,13 +12,12 @@ const egg = ((text) => {
     stack.push(0)
     let lines = text.split('\n')
     const longest = lines
-        .filter(e => e.startsWith('_'))
+        .filter(e => e.startsWith('str::'))
         .sort((a, b) => sgn(b.split(' ')[0].length - a.split(' ')[0].length))[0]
         .split(' ')[0].length
 
     for (let i = 0; i < lines.length; i++) {
         if (lines[i] === '') continue
-        trace.push(i)
         // if(DEBUG) console.log(i)
         stack[stack.length - 1] = i
         let line = lines[i]
@@ -42,11 +41,28 @@ const egg = ((text) => {
                 }
             }
             continue
-        } else if (line.startsWith('_')) {
-            let name = line.substring(1).split(' ')[0]
-            let args = line.substring(name.length + 2)
+        }
+
+
+        trace.push(i + 1)
+
+        if (line.startsWith('str::')) {
+            let name = line.substring(5).split(' ')[0]
+            let args = line.substring(name.length + 6)
 
             memory[name] = args
+            continue
+        }
+
+        if (line.startsWith('num::')) {
+            let name = line.substring(5).split(' ')[0]
+            let args = parseFloat(line.substring(name.length + 6))
+
+            if (isNaN(args)) {
+                console.log('CRITICAL FAILURE: Couldn\'t convert \'' + line.substring(name.length + 6) + '\' to float at line ' + (i + 1) + '!', registry)
+                return trace
+            }
+            memory[name] = parseFloat(args.toString())
             continue
         }
 
@@ -64,13 +80,13 @@ const egg = ((text) => {
             i = registry[args.split(' ')[0]]
             continue
         } else if (command === 'echo') {
-            if(DEBUG) {
+            if (DEBUG) {
                 let varname = args.split(' ')[0]
                 let space = longest - varname.length
                 space = space < 0 ? 0 : space
                 console.log(`[${varname}]${new Array(space).fill(' ').join('')}| ` + memory[varname] ?? '(null)')
             } else {
-                console.log( memory[args.split(' ')[0]] ?? '(null)')
+                console.log(memory[args.split(' ')[0]] ?? '(null)')
             }
         } else if (command === 'branch') {
             let addcond = args.split(' ')[0]
