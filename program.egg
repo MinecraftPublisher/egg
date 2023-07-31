@@ -1,0 +1,18 @@
+_msg declared p.
+_main started!
+_declare declaring...
+_done COMPLETED!
+
+:done
+echo msg
+echo p
+
+:declare
+echo declare
+_p hello world!
+goto done
+
+:main
+echo main
+branch p done declare
+echo done
