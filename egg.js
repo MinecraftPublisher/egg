@@ -1,5 +1,7 @@
 const registry = {}
-const memory = {}
+
+const num_memory = {}
+const str_memory = {}
 
 const sgn = ((x) => x > 0 ? 1 : x < 0 ? -1 : 0)
 
@@ -50,7 +52,7 @@ const egg = ((text) => {
             let name = line.substring(5).split(' ')[0]
             let args = line.substring(name.length + 6)
 
-            memory[name] = args
+            str_memory[name] = args
             continue
         }
 
@@ -62,7 +64,7 @@ const egg = ((text) => {
                 console.log('CRITICAL FAILURE: Couldn\'t convert \'' + line.substring(name.length + 6) + '\' to float at line ' + (i + 1) + '!', registry)
                 return trace
             }
-            memory[name] = parseFloat(args.toString())
+            num_memory[name] = parseFloat(args.toString())
             continue
         }
 
@@ -84,13 +86,13 @@ const egg = ((text) => {
                 let varname = args.split(' ')[0]
                 let space = longest - varname.length
                 space = space < 0 ? 0 : space
-                console.log(`[${varname}]${new Array(space).fill(' ').join('')}| ` + memory[varname] ?? '(null)')
+                console.log(`[${varname}]${new Array(space).fill(' ').join('')}| ` + str_memory[varname] ?? num_memory[varname] ?? '(null)')
             } else {
-                console.log(memory[args.split(' ')[0]] ?? '(null)')
+                console.log(str_memory[args.split(' ')[0]] ?? '(null)')
             }
         } else if (command === 'branch') {
             let addcond = args.split(' ')[0]
-            let cond = memory[addcond]
+            let cond = str_memory[addcond] ?? num_memory[addcond]
             let trueCase = registry[args.split(' ')[1]] ?? (i + 1)
             let falseCase = registry[args.split(' ')[2]] ?? (i + 1)
 
