@@ -1,0 +1,4 @@
+# bullcrap
+.yarn/
+node_modules/
+dist/*.js

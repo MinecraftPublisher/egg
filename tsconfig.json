@@ -1,0 +1,10 @@
+{
+    "compilerOptions": {
+        "lib": [
+            "ES2023",
+            "DOM"
+        ],
+        "checkJs": true,
+        "pretty": true
+    }
+}
