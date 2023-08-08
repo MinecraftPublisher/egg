@@ -1,18 +1,3 @@
-str::msg declared p.
-str::main started!
-str::declare declaring...
-str::done COMPLETED!
-
-:done
-echo msg
-echo p
-
-:declare
-echo declare
-str::p hello world!
-goto done
-
 :main
-echo main
-branch p done declare
-echo done
+str::x Monday left you broken1!!!!!!
+echo x

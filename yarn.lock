@@ -5,13 +5,125 @@ __metadata:
   version: 6
   cacheKey: 8
 
-"root-workspace-0b6124@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "root-workspace-0b6124@workspace:."
+"@oven/bun-darwin-aarch64@npm:0.7.3":
+  version: 0.7.3
+  resolution: "@oven/bun-darwin-aarch64@npm:0.7.3"
+  conditions: os=darwin & cpu=arm64
+  languageName: node
+  linkType: hard
+
+"@oven/bun-darwin-x64-baseline@npm:0.7.3":
+  version: 0.7.3
+  resolution: "@oven/bun-darwin-x64-baseline@npm:0.7.3"
+  conditions: os=darwin & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@oven/bun-darwin-x64@npm:0.7.3":
+  version: 0.7.3
+  resolution: "@oven/bun-darwin-x64@npm:0.7.3"
+  conditions: os=darwin & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@oven/bun-linux-aarch64@npm:0.7.3":
+  version: 0.7.3
+  resolution: "@oven/bun-linux-aarch64@npm:0.7.3"
+  conditions: os=linux & cpu=arm64
+  languageName: node
+  linkType: hard
+
+"@oven/bun-linux-x64-baseline@npm:0.7.3":
+  version: 0.7.3
+  resolution: "@oven/bun-linux-x64-baseline@npm:0.7.3"
+  conditions: os=linux & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@oven/bun-linux-x64@npm:0.7.3":
+  version: 0.7.3
+  resolution: "@oven/bun-linux-x64@npm:0.7.3"
+  conditions: os=linux & cpu=x64
+  languageName: node
+  linkType: hard
+
+"bun@npm:^0.7.3":
+  version: 0.7.3
+  resolution: "bun@npm:0.7.3"
   dependencies:
+    "@oven/bun-darwin-aarch64": 0.7.3
+    "@oven/bun-darwin-x64": 0.7.3
+    "@oven/bun-darwin-x64-baseline": 0.7.3
+    "@oven/bun-linux-aarch64": 0.7.3
+    "@oven/bun-linux-x64": 0.7.3
+    "@oven/bun-linux-x64-baseline": 0.7.3
+  dependenciesMeta:
+    "@oven/bun-darwin-aarch64":
+      optional: true
+    "@oven/bun-darwin-x64":
+      optional: true
+    "@oven/bun-darwin-x64-baseline":
+      optional: true
+    "@oven/bun-linux-aarch64":
+      optional: true
+    "@oven/bun-linux-x64":
+      optional: true
+    "@oven/bun-linux-x64-baseline":
+      optional: true
+  bin:
+    bun: bin/bun
+    bunx: bin/bun
+  checksum: d2e81c4156f89c98c9e5e8ac2f1511da6f77a3ee44cf7f1154b550aae1b2cad3cc72775a5a35aa5e46d3dffdeca3939e3b3aeba547b1df5b8a7198dc03c21ffd
+  conditions: (os=darwin | os=linux) & (cpu=arm64 | cpu=x64)
+  languageName: node
+  linkType: hard
+
+"chalk@npm:^5.3.0":
+  version: 5.3.0
+  resolution: "chalk@npm:5.3.0"
+  checksum: 623922e077b7d1e9dedaea6f8b9e9352921f8ae3afe739132e0e00c275971bdd331268183b2628cf4ab1727c45ea1f28d7e24ac23ce1db1eb653c414ca8a5a80
+  languageName: node
+  linkType: hard
+
+"debug@npm:^4.3.4":
+  version: 4.3.4
+  resolution: "debug@npm:4.3.4"
+  dependencies:
+    ms: 2.1.2
+  peerDependenciesMeta:
+    supports-color:
+      optional: true
+  checksum: 3dbad3f94ea64f34431a9cbf0bafb61853eda57bff2880036153438f50fb5a84f27683ba0d8e5426bf41a8c6ff03879488120cf5b3a761e77953169c0600a708
+  languageName: node
+  linkType: hard
+
+"egg@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "egg@workspace:."
+  dependencies:
+    bun: ^0.7.3
+    chalk: ^5.3.0
+    debug: ^4.3.4
+    toml: ^3.0.0
     typescript: ^5.1.6
+  bin:
+    egg: bin/index.js
   languageName: unknown
   linkType: soft
+
+"ms@npm:2.1.2":
+  version: 2.1.2
+  resolution: "ms@npm:2.1.2"
+  checksum: 673cdb2c3133eb050c745908d8ce632ed2c02d85640e2edb3ace856a2266a813b30c613569bf3354fdf4ea7d1a1494add3bfa95e2713baa27d0c2c71fc44f58f
+  languageName: node
+  linkType: hard
+
+"toml@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "toml@npm:3.0.0"
+  checksum: 5d7f1d8413ad7780e9bdecce8ea4c3f5130dd53b0a4f2e90b93340979a137739879d7b9ce2ce05c938b8cc828897fe9e95085197342a1377dd8850bf5125f15f
+  languageName: node
+  linkType: hard
 
 "typescript@npm:^5.1.6":
   version: 5.1.6

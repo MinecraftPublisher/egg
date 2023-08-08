@@ -1,5 +1,27 @@
 {
+  "name": "@egg/egg",
+  "version": "1.0.0",
+  "description": "A programming language based on control flow.",
+  "type": "module",
+  "bin": "bin/index.js",
+  "scripts": {
+    "build": "bun run build.ts",
+    "start": "bun run dist/egg.ts"
+  },
+  "keywords": [
+    "programming",
+    "language",
+    "egg",
+    "flow"
+  ],
+  "module": "es2022",
   "dependencies": {
+    "bun": "^0.7.3",
+    "chalk": "^5.3.0",
+    "debug": "^4.3.4",
+    "toml": "^3.0.0",
     "typescript": "^5.1.6"
-  }
+  },
+  "author": "Agent Z",
+  "license": "MIT"
 }

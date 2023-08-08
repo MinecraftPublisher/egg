@@ -7,6 +7,15 @@ const sgn = ((x) => x > 0 ? 1 : x < 0 ? -1 : 0)
 
 const DEBUG = true
 
+const __debug = require('debug')
+const log = __debug('egg')
+const loggers = {} //__BUILD__
+const _ = loggers
+
+const debug = ((...g) => {
+    log(...g)
+})
+
 enum returnAction {
     PEACEFUL = 0,
     CONTINUE = 1,
@@ -14,19 +23,22 @@ enum returnAction {
     CRITICAL = 3
 }
 
-const egg = ((text: string): number[] => {
+const egg = (async (text: string, filename: string): Promise<{ n: number, program: string }[]> => {
     const stack: number[] = []
-    const trace: number[] = []
+    const trace: { n: number, program: string }[] = []
 
     stack.push(0)
     let lines = text.split('\n')
-    const longest = lines
-        .filter(e => e.startsWith('str::'))
+    const longest = lines.filter(e => e.startsWith('str::') || e.startsWith('num::') || e.startsWith('int::')).length > 0 ? lines
+        .filter(e => e.startsWith('str::') || e.startsWith('num::') || e.startsWith('int::'))
         .sort((a, b) => sgn(b.split(' ')[0].length - a.split(' ')[0].length))[0]
-        .split(' ')[0].length
+        .split(' ')[0].length : 1
 
     for (let i = 0; i < lines.length; i++) {
-        if (lines[i] === '') continue
+        if (lines[i] === '') {
+            /// "Continue from empty line", i
+            continue
+        }
         // if(DEBUG) console.log(i)
         stack[stack.length - 1] = i
         let line = lines[i]
@@ -34,6 +46,8 @@ const egg = ((text: string): number[] => {
             if (stack.length !== 1) {
                 stack.splice(stack.length - 1)
                 i = stack[stack.length - 1]
+
+                /// "Continue from stack trace call", i
                 continue
             }
             let name = line.substring(1).split(' ')[0]
@@ -49,17 +63,24 @@ const egg = ((text: string): number[] => {
                     i++
                 }
             }
+
+            /// "Continue from segment registry", i
             continue
         }
 
 
-        trace.push(i + 1)
+        trace.push({
+            n: i + 1,
+            program: filename
+        })
 
         if (line.startsWith('str::')) {
             let name = line.substring(5).split(' ')[0]
             let args = line.substring(name.length + 6)
 
             str_memory[name] = args
+
+            /// "Continue from string declaration", i
             continue
         }
 
@@ -69,9 +90,29 @@ const egg = ((text: string): number[] => {
 
             if (isNaN(args)) {
                 console.log('CRITICAL FAILURE: Couldn\'t convert \'' + line.substring(name.length + 6) + '\' to float at line ' + (i + 1) + '!')
-                return trace
+                return [...trace, {
+                    n: -1,
+                    program: 'ERROR'
+                }]
             }
             num_memory[name] = parseFloat(args.toString())
+            /// "Continue from integer declaration", i
+            continue
+        }
+
+        if (line.startsWith('int::')) {
+            let name = line.substring(5).split(' ')[0]
+            let args = parseFloat(line.substring(name.length + 6))
+
+            if (isNaN(args)) {
+                console.log('CRITICAL FAILURE: Couldn\'t convert \'' + line.substring(name.length + 6) + '\' to float at line ' + (i + 1) + '!')
+                return [...trace, {
+                    n: -1,
+                    program: 'ERROR'
+                }]
+            }
+            num_memory[name] = parseFloat(args.toString())
+            /// "Continue from integer declaration", i
             continue
         }
 
@@ -80,30 +121,37 @@ const egg = ((text: string): number[] => {
 
         //__HANDLER__
 
-        let cases: string[] = [] //__BUILD__
-        let internals: (() => returnAction)[] = [] //__BUILD__
+        let internals: { [key: string]: (() => returnAction) } = {} //__BUILD__
 
         command = command.replaceAll('.', '_')
-        let isInternal = cases.includes(command)
+        let isInternal = !!internals[command]
         if (isInternal) {
-            const returnValue = internals[command]()
+            const returnValue = await internals[command]()
             if (returnValue === returnAction.CONTINUE) continue
             else if (returnValue === returnAction.PEACEFUL) { }
-            else if (returnValue === returnAction.CRITICAL) process.exit(1)
-            else if (returnValue === returnAction.EXIT) process.exit(0)
+            else if (returnValue === returnAction.CRITICAL) {
+                throw [...trace, {
+                    n: -1,
+                    program: 'CRITICAL'
+                }]
+            }
+            else if (returnValue === returnAction.EXIT) {
+                return [...trace, {
+                    n: -1,
+                    program: 'EXIT'
+                }]
+            }
         } else {
             console.log('CRITICAL FAILURE: Couldn\'t spot internal function \'' + command + '\' at line ' + (i + 1) + '!')
+            return [...trace, {
+                n: -1,
+                program: 'ERROR'
+            }]
         }
     }
+    /// "Loop exit"
 
     return trace
 })
 
-const fs = require('fs')
-const file = fs.readFileSync('program.egg', 'utf-8')
-
-let trace = egg(file)
-console.log()
-console.log('final stack:', trace)
-
-export { };
+export default egg;

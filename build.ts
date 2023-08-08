@@ -1,7 +1,9 @@
 const ts = require('typescript')
 const fs = require('fs')
 
-const funcs: ({ refs: string[], text: string })[] = []
+const chalk = require('chalk').Chalk
+
+const funcs: ({ refs: { name: string, ref: string }[], text: string })[] = []
 const recursive = ((path = './mod/') => {
     const files: string[] = fs.readdirSync(path)
     for (let file of files) {
@@ -13,11 +15,26 @@ const recursive = ((path = './mod/') => {
             if (!file.endsWith('.ts')) continue
             console.log('-> ' + path.substring('./mod/'.length) + file)
             const text: string = fs.readFileSync(path + file, 'utf-8')
-            const refs = text.match(/\/\/:[a-z0-9_]+/gi) ?? []
+            let refs = text.match(/\/\/:.+/gi) ?? []
+
+            let ref2 = refs.map(e => e.substring(3))
+                .map(e => {
+                    if (e.split(' -> ').length === 2) {
+                        return {
+                            name: e.split(' -> ')[0],
+                            ref: e.split(' -> ')[1]
+                        }
+                    } else {
+                        return {
+                            name: e,
+                            ref: e
+                        }
+                    }
+                })
 
             funcs.push({
-                refs,
-                text
+                refs: ref2,
+                text: text.replaceAll('\n\nexport {}', '')
             })
         }
     }
@@ -28,10 +45,10 @@ recursive()
 const egg = fs.readFileSync('egg.ts', 'utf-8')
 const built = egg
     .replace('//__HANDLER__', `${funcs.map(e => e.text).join('\n\n')}`)
-    .replace('let internals: (() => returnAction)[] = [] //__BUILD__', `let internals = { ${funcs.map(e => e.refs)
-    .flat().map(e => `"${e.substring(3)}": ${e.substring(3)}`).join(',\n')} }`)
-    .replace('let cases: string[] = [] //__BUILD__', `let cases = ${JSON.stringify(funcs.map(e => e.refs)
-        .flat().map(e => e.substring(3)))}`)
+    .replace('let internals: { [key: string]: (() => returnAction) } = {} //__BUILD__', `let internals = {\n${funcs.map(e => e.refs)
+        .flat().map(e => `"${e.name}": ${e.ref}`).join(',\n')}\n}`)
+    .replace(`const loggers = {} //__BUILD__`, `const loggers = { ${funcs.map(e => e.refs).flat().map(e => `${JSON.stringify(e.name)}: __debug(${JSON.stringify(e.name)})`).join(', ')} }`)
+    .replaceAll(/\/\/\/ ?([^-][^>]|.)+ -> .+/g, (e) => `debug(${e.substring(4).split(' -> ')[0]}, ${e.substring(4).split(' -> ')[1]})`)
 
 const program = ts.transpileModule(built, {
     fileName: 'egg.js',
@@ -46,6 +63,8 @@ fs.writeFileSync('dist/egg.ts', built)
 fs.writeFileSync('dist/egg.js', `//@ts-nocheck
 /**
  * Egg flow interpreter
- * By github/MinectaftPublisher
+ * By github/MinecraftPublisher
  */
 ${program.outputText}`)
+
+export {};

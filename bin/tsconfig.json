@@ -1,0 +1,13 @@
+{
+    "compilerOptions": {
+        "target": "es2017",
+        "module": "es2022",
+        "lib": [
+            "ES2023",
+            "DOM"
+        ],
+        "checkJs": true,
+        "pretty": true,
+        "moduleResolution": "Node16"
+    }
+}

@@ -1,5 +1,5 @@
 //:branch
-const branch = ((): returnAction => {
+const branch = (async (): Promise<returnAction> => {
     let addcond = args.split(' ')[0]
     let cond = str_memory[addcond] ?? num_memory[addcond]
     let trueCase = registry[args.split(' ')[1]] ?? (i + 1)
