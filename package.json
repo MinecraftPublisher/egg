@@ -1,6 +1,6 @@
 {
   "name": "@agent_z/egg",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A programming language based on control flow.",
   "type": "module",
   "bin": "bin/index.ts",
