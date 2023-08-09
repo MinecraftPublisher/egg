@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 const start_time = Date.now()
 
 const node_path = process.argv[0]
@@ -19,6 +19,21 @@ process.stdout.write(chalk.bold.hex('#888')('.'))
 await sleep(250)
 process.stdout.write(chalk.bold.hex('#888')('.'))
 await sleep(250)
+
+const __factory = (await import('../build.ts')).default
+__factory()
+const egg = (await import('../dist/egg.ts')).default
+
+type Iregistry = { [key: string]: number }
+type InumberMemory = { [key: string]: number }
+type IstringMemory = { [key: string]: string }
+
+interface IeggReturn {
+    stackTrace: { n: number, program: string }[]
+    registry: Iregistry
+    num_memory: InumberMemory
+    str_memory: IstringMemory
+}
 
 import * as fs from 'fs'
 import { execSync as run } from 'child_process'
@@ -102,7 +117,35 @@ $ Total time elapsed: ${finish_time - start_time}ms`))
 	console.log()
 	console.log()
 } else {
+	let unknown = args.filter(e => !fs.existsSync(e))
+	let files = args.filter(e => fs.existsSync(e)).map(e => ({
+		program: e,
+		text: fs.readFileSync(e, 'utf-8')
+	}))
 
+	if(unknown.length > 0) {
+		for(let missing of unknown) {
+			console.log(chalk.redBright.bold('error') + ': Program \'' + missing + '\' does not exist!')
+		}
+	} else {
+		process.stdout.write('\r')
+
+		let eggData: IeggReturn = {
+			stackTrace: [],
+			registry: {},
+			num_memory: {},
+			str_memory: {}
+		}
+
+		for(let program of files) {
+			let result = await egg(program.text, program.program, eggData.registry, eggData.num_memory, eggData.str_memory)
+
+			eggData.stackTrace.push(...result.stackTrace)
+			eggData.registry = { ...eggData.registry, ...result.registry }
+			eggData.num_memory = { ...eggData.num_memory, ...result.num_memory }
+			eggData.str_memory = { ...eggData.str_memory, ...result.str_memory }
+		}
+	}
 }
 
 export { }

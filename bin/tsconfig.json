@@ -8,6 +8,8 @@
         ],
         "checkJs": true,
         "pretty": true,
-        "moduleResolution": "Node16"
+        "moduleResolution": "Node16",
+        "noEmit": true,
+        "allowImportingTsExtensions": true
     }
 }

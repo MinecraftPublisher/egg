@@ -1,11 +1,21 @@
-const registry = {}
+type Iregistry = { [key: string]: number }
+type InumberMemory = { [key: string]: number }
+type IstringMemory = { [key: string]: string }
 
-const num_memory = {}
-const str_memory = {}
+interface IeggReturn {
+    stackTrace: { n: number, program: string }[]
+    registry: Iregistry
+    num_memory: InumberMemory
+    str_memory: IstringMemory
+}
+
+type eggReturn = Promise<IeggReturn>
 
 const sgn = ((x) => x > 0 ? 1 : x < 0 ? -1 : 0)
 
 const DEBUG = true
+
+const __MODULE_STORAGE: { [key: string]: any } = {}
 
 const __debug = require('debug')
 const log = __debug('egg')
@@ -23,7 +33,7 @@ enum returnAction {
     CRITICAL = 3
 }
 
-const egg = (async (text: string, filename: string): Promise<{ n: number, program: string }[]> => {
+const egg = (async (text: string, filename: string, registry: Iregistry = {}, num_memory: InumberMemory = {}, str_memory: IstringMemory = {}): Promise<IeggReturn> => {
     const stack: number[] = []
     const trace: { n: number, program: string }[] = []
 
@@ -90,10 +100,15 @@ const egg = (async (text: string, filename: string): Promise<{ n: number, progra
 
             if (isNaN(args)) {
                 console.log('CRITICAL FAILURE: Couldn\'t convert \'' + line.substring(name.length + 6) + '\' to float at line ' + (i + 1) + '!')
-                return [...trace, {
-                    n: -1,
-                    program: 'ERROR'
-                }]
+                return {
+                    stackTrace: [...trace, {
+                        n: -1,
+                        program: 'CRITICAL'
+                    }],
+                    registry,
+                    num_memory,
+                    str_memory
+                }
             }
             num_memory[name] = parseFloat(args.toString())
             /// "Continue from integer declaration", i
@@ -106,10 +121,15 @@ const egg = (async (text: string, filename: string): Promise<{ n: number, progra
 
             if (isNaN(args)) {
                 console.log('CRITICAL FAILURE: Couldn\'t convert \'' + line.substring(name.length + 6) + '\' to float at line ' + (i + 1) + '!')
-                return [...trace, {
-                    n: -1,
-                    program: 'ERROR'
-                }]
+                return {
+                    stackTrace: [...trace, {
+                        n: -1,
+                        program: 'CRITICAL'
+                    }],
+                    registry,
+                    num_memory,
+                    str_memory
+                }
             }
             num_memory[name] = parseFloat(args.toString())
             /// "Continue from integer declaration", i
@@ -130,28 +150,49 @@ const egg = (async (text: string, filename: string): Promise<{ n: number, progra
             if (returnValue === returnAction.CONTINUE) continue
             else if (returnValue === returnAction.PEACEFUL) { }
             else if (returnValue === returnAction.CRITICAL) {
-                throw [...trace, {
-                    n: -1,
-                    program: 'CRITICAL'
-                }]
+                throw {
+                    stackTrace: [...trace, {
+                        n: -1,
+                        program: 'CRITICAL'
+                    }],
+                    registry,
+                    num_memory,
+                    str_memory
+                }
             }
             else if (returnValue === returnAction.EXIT) {
-                return [...trace, {
-                    n: -1,
-                    program: 'EXIT'
-                }]
+                return {
+                    stackTrace: [...trace, {
+                        n: -1,
+                        program: 'EXIT'
+                    }],
+                    registry,
+                    num_memory,
+                    str_memory
+                }
             }
         } else {
             console.log('CRITICAL FAILURE: Couldn\'t spot internal function \'' + command + '\' at line ' + (i + 1) + '!')
-            return [...trace, {
-                n: -1,
-                program: 'ERROR'
-            }]
+
+            return {
+                stackTrace: [...trace, {
+                    n: -1,
+                    program: 'CRITICAL'
+                }],
+                registry,
+                num_memory,
+                str_memory
+            }
         }
     }
     /// "Loop exit"
 
-    return trace
+    return {
+        stackTrace: trace,
+        registry,
+        num_memory,
+        str_memory
+    }
 })
 
 export default egg;

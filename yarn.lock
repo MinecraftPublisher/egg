@@ -5,6 +5,28 @@ __metadata:
   version: 6
   cacheKey: 8
 
+"@egg/egg@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "@egg/egg@workspace:."
+  dependencies:
+    "@iarna/toml": ^2.2.5
+    bun: ^0.7.3
+    chalk: ^5.3.0
+    debug: ^4.3.4
+    toml: ^3.0.0
+    typescript: ^5.1.6
+  bin:
+    egg: bin/index.ts
+  languageName: unknown
+  linkType: soft
+
+"@iarna/toml@npm:^2.2.5":
+  version: 2.2.5
+  resolution: "@iarna/toml@npm:2.2.5"
+  checksum: b63b2b2c4fd67969a6291543ada0303d45593801ee744b60f5390f183c03d9192bc67a217abb24be945158f1935f02840d9ffff40c0142aa171b5d3b6b6a3ea5
+  languageName: node
+  linkType: hard
+
 "@oven/bun-darwin-aarch64@npm:0.7.3":
   version: 0.7.3
   resolution: "@oven/bun-darwin-aarch64@npm:0.7.3"
@@ -96,20 +118,6 @@ __metadata:
   checksum: 3dbad3f94ea64f34431a9cbf0bafb61853eda57bff2880036153438f50fb5a84f27683ba0d8e5426bf41a8c6ff03879488120cf5b3a761e77953169c0600a708
   languageName: node
   linkType: hard
-
-"egg@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "egg@workspace:."
-  dependencies:
-    bun: ^0.7.3
-    chalk: ^5.3.0
-    debug: ^4.3.4
-    toml: ^3.0.0
-    typescript: ^5.1.6
-  bin:
-    egg: bin/index.js
-  languageName: unknown
-  linkType: soft
 
 "ms@npm:2.1.2":
   version: 2.1.2

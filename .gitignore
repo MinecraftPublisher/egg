@@ -1,4 +1,7 @@
 # bullcrap
 .yarn/
+.git/
 node_modules/
 dist/
+**/*.egg
+.vscode/
