@@ -24,5 +24,8 @@
     "typescript": "^5.1.6"
   },
   "author": "Agent Z",
-  "license": "MIT"
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  }
 }
