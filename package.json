@@ -1,5 +1,5 @@
 {
-  "name": "@egg/egg",
+  "name": "@agent_z/egg",
   "version": "1.0.0",
   "description": "A programming language based on control flow.",
   "type": "module",

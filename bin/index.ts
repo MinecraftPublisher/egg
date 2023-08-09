@@ -75,7 +75,7 @@ if (args.length === 0) {
 	const egg_time = Date.now()
 	await sleep(500)
 
-	console.log(`${chalk.italic.hex('#888')('@egg/')}${chalk.yellowBright.bold('egg')}` +
+	console.log(`${chalk.italic.hex('#888')('@agent_z/')}${chalk.yellowBright.bold('egg')}` +
 		` - ${chalk.magentaBright('v')}${chalk.magentaBright.bold(Package.version)}`)
 	console.log(chalk.whiteBright(`A ${chalk.greenBright.bold('fast')}, ${chalk.greenBright.bold('reliable')}` +
 		` and ${chalk.greenBright.bold('dead simple')} programming language.`))
