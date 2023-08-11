@@ -49,7 +49,7 @@ const __build_Factory = ((LOG = false) => {
         .replace('let internals: { [key: string]: (() => returnAction) } = {} //__BUILD__', `let internals = {\n${funcs.map(e => e.refs)
             .flat().map(e => `"${e.name}": ${e.ref}`).join(',\n')}\n}`)
         .replace(`const loggers = {} //__BUILD__`, `const loggers = { ${funcs.map(e => e.refs).flat().map(e => `${JSON.stringify(e.name)}: __debug(${JSON.stringify(e.name)})`).join(', ')} }`)
-        .replaceAll(/\/\/\/ ?([^-][^>]|.)+ -> .+/g, (e) => `debug(${e.substring(4).split(' -> ')[0]}, ${e.substring(4).split(' -> ')[1]})`)
+        .replaceAll(/\/\/\/ .+/g, (e) => `debug(${e.substring(4)})`)
 
     const program = ts.transpileModule(built, {
         fileName: 'egg.js',

@@ -1,4 +1,4 @@
-//:echo
+//:echo -> fmt
 const echo = ((): returnAction => {
     if (DEBUG) {
         let varname = args.split(' ')[0]

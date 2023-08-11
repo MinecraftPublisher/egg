@@ -13,7 +13,7 @@ type eggReturn = Promise<IeggReturn>
 
 const sgn = ((x) => x > 0 ? 1 : x < 0 ? -1 : 0)
 
-const DEBUG = true
+const DEBUG = false
 
 const __MODULE_STORAGE: { [key: string]: any } = {}
 
