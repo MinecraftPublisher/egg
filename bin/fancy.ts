@@ -22,7 +22,8 @@ process.stdout.write(chalk.bold.hex('#888')('.'))
 const __factory = (await import('../build.ts')).default
 __factory()
 process.stdout.write(chalk.bold.hex('#888')('.'))
-const built = `//@ts-nocheck
+const built = `#!/usr/bin/env node
+//@ts-nocheck
 
 const node_path = process.argv[0]
 const __filename = process.argv[1]
@@ -32,7 +33,6 @@ import { Chalk } from 'chalk'
 const chalk = new Chalk()
 
 import * as fs from 'fs'
-import { execSync as run } from 'child_process'
 
 let unknown = args.filter(e => !fs.existsSync(e))
 let files = args.filter(e => fs.existsSync(e)).map(e => ({
@@ -41,7 +41,7 @@ let files = args.filter(e => fs.existsSync(e)).map(e => ({
 }))
 
 const egg_construct = (() => {
-	${fs.readFileSync(__filename.replaceAll('/bin/index.ts', '/dist/egg.ts').replaceAll('\\', '\\\\'), 'utf-8').replaceAll('export default egg', 'return egg')}
+	${fs.readFileSync(__filename.replaceAll('/bin/index.ts', '/dist/egg.ts').replaceAll('/bin/fancy.ts', '/dist/egg.ts').replaceAll('\\', '\\\\'), 'utf-8').replaceAll('export default egg', 'return egg')}
 })
 
 if(args.length === 0) {
@@ -93,7 +93,7 @@ const program = ts.transpileModule(built, {
 })
 
 // fs.writeFileSync(__filename.replaceAll('/bin/index.ts', '/bin/bundle.ts'), built)
-fs.writeFileSync(__filename.replaceAll('/bin/index.ts', '/bin/bundle.js'), program.outputText)
+fs.writeFileSync(__filename.replaceAll('/bin/index.ts', '/bin/bundle.js').replaceAll('/bin/fancy.ts', '/bin/bundle.js'), program.outputText)
 
 if (args[0] !== 'sync') {
 	const egg = (await import('../dist/egg.ts')).default

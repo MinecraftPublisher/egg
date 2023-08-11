@@ -15,7 +15,15 @@
                             ████        ████
                                 ████████
 # _@agent\_z_/**egg**
-To install egg, Simply run `npm i -g @agent_z/egg`. Want to use another package manager? Well too bad!
+To install egg, Simply run `npm i -g @agent_z/egg`. Want to use another package manager? Check the notice!
+
+## cli tool
+The cli tool is your main access point to the egg interpreter. However, Some may find it slow. To switch to a faster, Minimal version, just run `egg minimal` and you will be taken into a familiar, Blazingly fast environment. To upgrade your minimal version incase you made changes to the fancy version or have just ran an update, Run `egg sync` to call the fancy version and update your minimal cli. (**WARNING**: The minimal version requires the fancy version to be ran ATLEAST once, Do not modify the settings in the package itself without building the minimal cli first.)
+
+## all cli tool commands:
+- [egg] Main, Switchable cli interface
+- [fegg] Always fancy version (**f**ancy **e**gg)
+- [megg] Always minimal version (**m**inimal **e**gg) (REQUIRES fancy version to be ran atleast once)
 
 ## List of compatible package managers
 - npm
