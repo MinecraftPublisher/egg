@@ -10,7 +10,8 @@
   },
   "scripts": {
     "build": "bun run build.ts",
-    "start": "bun run dist/egg.ts"
+    "start": "bun run dist/egg.ts",
+    "publish": "bun run fix.js && pnpm publish"
   },
   "keywords": [
     "programming",
@@ -20,10 +21,12 @@
   ],
   "module": "es2022",
   "dependencies": {
+    "@agent_z/egg": "^1.0.2",
     "@iarna/toml": "^2.2.5",
     "bun": "^0.7.3",
     "chalk": "^5.3.0",
     "debug": "^4.3.4",
+    "egg": "^3.17.4",
     "toml": "^3.0.0",
     "typescript": "^5.1.6"
   },

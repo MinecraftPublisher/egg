@@ -1,0 +1,22 @@
+---
+BasedOnStyle: LLVM
+AlignAfterOpenBracket: AlwaysBreak
+AlignConsecutiveMacros: 'false'
+AlignConsecutiveAssignments: 'false'
+AlignConsecutiveDeclarations: 'false'
+AlignEscapedNewlines: Right
+AlignOperands: 'false'
+AlignTrailingComments: 'true'
+AllowShortBlocksOnASingleLine: 'false'
+IndentWidth: '4'
+NamespaceIndentation: All
+SpaceBeforeCpp11BracedList: 'true'
+SpaceBeforeCtorInitializerColon: 'true'
+SpaceBeforeInheritanceColon: 'true'
+SpaceBeforeParens: Always
+SpaceBeforeRangeBasedForLoopColon: 'true'
+SpaceInEmptyParentheses: 'false'
+SpacesInParentheses: 'true'
+SpacesInSquareBrackets: 'true'
+TabWidth: '4'
+UseTab: Always

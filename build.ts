@@ -69,6 +69,7 @@ const __build_Factory = ((LOG = false) => {
 ${program.outputText}`)
 })
 
+if(!fs.existsSync('dist/')) fs.mkdirSync('dist/')
 if(process.argv.includes('build__console')) __build_Factory(true)
 
 export default __build_Factory;

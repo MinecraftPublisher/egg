@@ -116,7 +116,7 @@ if (args[0] !== 'sync') {
 
 	let impatient = true
 
-	const path = `${fs.existsSync(root_path + '/@egg/egg/package.json') ? root_path : local_path}/@egg/egg/`
+	const path = `${fs.existsSync(root_path + '/@agent_z/egg/package.json') ? root_path : local_path}/@agent_z/egg/`
 	const Package = JSON.parse(fs.readFileSync(path + 'package.json', 'utf-8'))
 
 	const root_time = Date.now()
