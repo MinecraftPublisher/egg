@@ -1,0 +1,5 @@
+/build
+/egg
+dist/egg
+dist/egg.nim
+.history/
