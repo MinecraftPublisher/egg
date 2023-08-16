@@ -6,7 +6,8 @@
   "bin": {
     "egg": "bin/index.ts",
     "fegg": "bin/fancy.ts",
-    "megg": "bin/bundle.js"
+    "megg": "bin/bundle.js",
+    "negg": "nim/egg"
   },
   "scripts": {
     "build": "bun run build.ts",
