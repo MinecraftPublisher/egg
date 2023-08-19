@@ -46,8 +46,10 @@ proc Inception(iturn: Return) =
 	e.num_memory = iturn.num_memory
 	e.str_memory = iturn.str_memory
 
-	e.msg = fmt"[ ] Critical program exit. Line '{e.stackTrace[e.stackTrace.len - 2].n}' " & 
-		fmt"Program '{e.stackTrace[e.stackTrace.len - 2].program}' Content '{PROGRAM_REGISTER[e.stackTrace[e.stackTrace.len - 2].program].split('\n')[e.stackTrace[e.stackTrace.len - 2].n]}'"
+	var file = PROGRAM_REGISTER[e.stackTrace[e.stackTrace.len - 2].program]
+	var content = file.split('\n')[e.stackTrace[e.stackTrace.len - 2].n]
+	e.msg = fmt"Critical program exit. Line '{e.stackTrace[e.stackTrace.len - 2].n}' " & 
+		fmt"Program '{e.stackTrace[e.stackTrace.len - 2].program}' Content '{content}'"
 	raise e
 
 proc egg(code: string, c_filename: string, c_registry: Registry,
@@ -95,20 +97,22 @@ proc egg(code: string, c_filename: string, c_registry: Registry,
 
 		if line.startsWith("str::"):
 			var name = line.substr(5).split(' ')[0]
-			try:
-			    discard parseFloat(name)
-				echo fmt"CRITICAL FAILURE: Variable name cannot be an integer constant at line {i.n + 1}!"
-				return Return(
-					stackTrace: concat(trace, @[Trace(n: -1,
-				        program: "CRITICAL")]),
-					registry: registry,
-					num_memory: num_memory,
-					str_memory: str_memory
-				)
-			except CatchableError:
-			    var args = line.substr(name.len + 6)
-			    str_memory[name] = args
-			    continue
+			# try:
+			    # discard parseFloat(name)
+				# echo fmt"CRITICAL FAILURE: Variable name cannot be an integer constant at line {i.n + 1}!"
+				# return Return(
+				# 	stackTrace: concat(trace, @[Trace(n: -1,
+				#         program: "CRITICAL")]),
+				# 	registry: registry,
+				# 	num_memory: num_memory,
+				# 	str_memory: str_memory
+				# )
+			# except CatchableError:
+			
+			var space = line.findAll(re"[ \t]+")[0].len
+			var args = line.substr(name.len + space + 5)
+		    str_memory[name] = args
+		    continue
 
 		elif line.startsWith("num::"):
 			var name = line.substr(5).split(' ')[0]
@@ -123,12 +127,13 @@ proc egg(code: string, c_filename: string, c_registry: Registry,
 			    	str_memory: str_memory
 			    )
 			except CatchableError:
+				var space = line.findAll(re"[ \t]+")[0].len
 			    try:
-				    var args = parseFloat(line.substr(name.len + 6))
+				    var args = parseFloat(line.substr(name.len + space + 5))
 				    num_memory[name] = args
 				    continue
 			    except CatchableError:
-    				echo fmt"CRITICAL FAILURE: Couldn't convert '{line.substr(name.len + 6)}' to number at line {i.n + 1}!"
+    				echo fmt"CRITICAL FAILURE: Couldn't convert '{line.substr(name.len + space + 5)}' to number at line {i.n + 1}!"
 	    			return Return(
 		    			stackTrace: concat(trace, @[Trace(n: -1,
 			    				program: "CRITICAL")]),
@@ -137,8 +142,9 @@ proc egg(code: string, c_filename: string, c_registry: Registry,
 	    				str_memory: str_memory
 		    		)
 
-		var command = line.split(' ')[0]
-		var args = line.substr(command.len + 1)
+		var command = line.split(re"[ \t]+")[0]
+		var space = line.findAll(re"[ \t]+")[0].len
+		var args = line.substr(command.len + space)
 
 		var internals: Internals = initTable[string, Action]()
 
@@ -157,6 +163,7 @@ proc egg(code: string, c_filename: string, c_registry: Registry,
 		mod_modules_eval()
 
 		mod_operations_math()
+		mod_operations_d_string()
 
 		#[
 			--------------------------------------------------------------------

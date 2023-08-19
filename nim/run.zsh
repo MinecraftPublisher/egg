@@ -14,4 +14,4 @@ echo
 echo
 echo
 # negg run program.egg
-./egg run program.egg
+# ./egg run program.egg

@@ -16,5 +16,6 @@ template importMods() =
     import "modules/mod.nim"
 
     import "operations/d_math.nim"
+    import "operations/d_string.nim"
 
 export importMods

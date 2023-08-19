@@ -17,12 +17,6 @@ template mod_default_branch() =
 		if addcond.isEmptyOrWhitespace:
 			echo fmt"CRITICAL FAILURE: Condition memory address at line {i.n + 1} not provided!"
 			return returnAction.CRITICAL
-		elif trueCase.n == i.n + 1:
-			echo fmt"CRITICAL FAILURE: True case memory address at line {i.n + 1} not provided!"
-			return returnAction.CRITICAL
-		elif falseCase.n == i.n + 1:
-			echo fmt"CRITICAL FAILURE: False case memory address at line {i.n + 1} not provided!"
-			return returnAction.CRITICAL
 				
 		var condition: bool
 		if str_memory.hasKey(addcond):
@@ -34,12 +28,20 @@ template mod_default_branch() =
 			return returnAction.CRITICAL
 
 		if condition:
+			if trueCase.n == i.n + 1:
+				echo fmt"CRITICAL FAILURE: True case memory address at line {i.n + 1} not provided!"
+				return returnAction.CRITICAL
+
 			stack[stack.len - 1] = i
 			stack.add(trueCase)
 			i = trueCase
 			# i.n += 1
 			return returnAction.CONTINUE
 		else:
+			if falseCase.n == i.n + 1:
+				echo fmt"CRITICAL FAILURE: False case memory address at line {i.n + 1} not provided!"
+				return returnAction.CRITICAL
+
 			stack[stack.len - 1] = i
 			stack.add(falseCase)
 			i = falseCase
