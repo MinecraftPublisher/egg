@@ -43,3 +43,4 @@ template mod_operations_string() =
         var dest = spl[2]
 
     internals["string.split"] = d_string_split
+    internals["string.index"] = d_string_index
