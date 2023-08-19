@@ -36,5 +36,11 @@ Egg uses [Bun](https://bun.sh/) as its main runtime to cut slack and run the typ
 ## Recommendations
 I recommend you install bun from the official website before installing Egg, As I have not tested wether the bun dependency works well on devices without bun installed or not.
 
+## VScode extensions: Syntax highlighting and Hover information
+You could either build and install them yourself, Or download them from the zip file located in the root directory of this repository saved as `egg-extensions.zip`.
+
+## NIM version
+If you want to have a truly low level experience, You could build the nim version instead. The source code is available at `nim/` in this same directory.
+
 ## Syntax guide
 Coming soon!

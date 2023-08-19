@@ -1,0 +1,25 @@
+{
+  "name": "egg-flow-server",
+  "displayName": "Egg Language Support",
+  "description": "Adds support for egg scripts, Syntax highlighting and hover information.",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.80.1"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [{
+      "id": "egg",
+      "aliases": ["Egg", "egg"],
+      "extensions": [".egg"],
+      "configuration": "./language-configuration.json"
+    }],
+    "grammars": [{
+      "language": "egg",
+      "scopeName": "source.egg",
+      "path": "./syntaxes/egg.tmLanguage.json"
+    }]
+  }
+}
