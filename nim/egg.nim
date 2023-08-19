@@ -1,6 +1,9 @@
 #? replace(sub = "\t", by = "    ")
 
-import strformat, strutils, sequtils, tables, re, os, sugar
+import strformat, strutils, sequtils, tables, re, os, sugar, math
+
+import "mod/import.nim"
+importMods()
 
 type returnAction = enum
 	PEACEFUL = 0,
@@ -31,6 +34,8 @@ type Eggception = ref object of CatchableError
 	num_memory: NumberMemory
 	str_memory: StringMemory
 
+var PROGRAM_REGISTER: Table[string, string] = initTable[string, string]()
+
 proc Inception(iturn: Return) =
 	var e: Eggception
 	new(e)
@@ -41,10 +46,9 @@ proc Inception(iturn: Return) =
 	e.num_memory = iturn.num_memory
 	e.str_memory = iturn.str_memory
 
-	e.msg = "Critical program exit"
+	e.msg = fmt"[ ] Critical program exit. Line '{e.stackTrace[e.stackTrace.len - 2].n}' " & 
+		fmt"Program '{e.stackTrace[e.stackTrace.len - 2].program}' Content '{PROGRAM_REGISTER[e.stackTrace[e.stackTrace.len - 2].program].split('\n')[e.stackTrace[e.stackTrace.len - 2].n]}'"
 	raise e
-
-var PROGRAM_REGISTER: Table[string, string] = initTable[string, string]()
 
 proc egg(code: string, c_filename: string, c_registry: Registry,
 		c_num_memory: NumberMemory, c_str_memory: StringMemory): Return =
@@ -147,17 +151,12 @@ proc egg(code: string, c_filename: string, c_registry: Registry,
 		mod_io_dump()
 		mod_io_echo()
 		mod_io_read()
+		mod_io_sleep()
 
 		mod_modules_mod()
 		mod_modules_eval()
 
 		mod_operations_math()
-
-		#[
-			--------------------------------------------------------------------
-			File: mod/operations/string.nim
-			-------------------------------------------------------------------- 
-		]#
 
 		#[
 			--------------------------------------------------------------------
@@ -207,6 +206,10 @@ proc egg(code: string, c_filename: string, c_registry: Registry,
 
 const DEVOLVE = "REVOLVER"
 
+if DEVOLVE == "00000000":
+	# compilation mode
+	echo "Bundled egg"
+
 proc help() =
 	echo "Usage:"
 	echo "      "
@@ -231,9 +234,7 @@ if paramCount() > 0:
     		num_memory = ret.num_memory
     		str_memory = ret.str_memory
     elif cmd == "compile":
-        var path = getAppFilename()
-        # var f = open(path, fmReadWriteExisting)
-        # var size = f.getFileSize()
-        var text = readFile(path)
+		# to be implemented!
+		discard
 else:
     help()
