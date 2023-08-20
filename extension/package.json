@@ -1,0 +1,63 @@
+{
+	"name": "egg-server",
+	"displayName": "Egg Language Support",
+	"description": "Adds support for egg scripts, Syntax higlighting, And hover information for all available commands.",
+	"version": "1.3.2",
+	"engines": {
+		"vscode": "^1.80.1"
+	},
+	"scripts": {
+		"clean": "rm -f egg-server-*.vsix",
+		"package": "yes | vsce package",
+		"start-deprecated": "code --install-extension egg-server-*.vsix",
+		"dev": "bun run clean && bun run package"
+	},
+	"publisher": "MinecraftPublisher (GitHub)",
+	"categories": [
+		"Programming Languages"
+	],
+	"contributes": {
+		"languages": [
+			{
+				"id": "egg",
+				"aliases": [
+					"Egg Flow",
+					"egg"
+				],
+				"extensions": [
+					".egg",
+					"egg"
+				],
+				"configuration": "./language-configuration.json"
+			}
+		],
+		"grammars": [
+			{
+				"language": "egg",
+				"scopeName": "source.egglang",
+				"path": "./egg.tmLanguage.json"
+			}
+		],
+		"commands": [
+			{
+				"command": "egg-server.Check",
+				"title": "Egg: Check project"
+			}
+		]
+	},
+	"main": "./extension.js",
+	"activationEvents": [
+		"onLanguage:*"
+	],
+	"devDependencies": {
+		"@types/vscode": "^1.80.1",
+		"@types/glob": "^8.1.0",
+		"@types/mocha": "^10.0.1",
+		"@types/node": "20.2.5",
+		"eslint": "^8.41.0",
+		"glob": "^8.1.0",
+		"mocha": "^10.2.0",
+		"typescript": "^5.1.3",
+		"@vscode/test-electron": "^2.3.2"
+	}
+}
