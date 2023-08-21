@@ -1,3 +1,4 @@
+```
                                 ████████
                               ██        ██
                             ██▒▒▒▒        ██
@@ -14,6 +15,7 @@
                           ██▒▒              ██
                             ████        ████
                                 ████████
+```
 # _@agent\_z_/**egg**
 To install egg, Simply run `npm i -g @agent_z/egg`. Want to use another package manager? Check the notice!
 
@@ -24,6 +26,7 @@ The cli tool is your main access point to the egg interpreter. However, Some may
 - [egg] Main, Switchable cli interface
 - [fegg] Always fancy version (**f**ancy **e**gg)
 - [megg] Always minimal version (**m**inimal **e**gg) (REQUIRES fancy version to be ran atleast once)
+- [negg] Nim version, Requires the `nim/` folder's files to be compiled.
 
 ## List of compatible package managers
 - npm
@@ -36,8 +39,8 @@ Egg uses [Bun](https://bun.sh/) as its main runtime to cut slack and run the typ
 ## Recommendations
 I recommend you install bun from the official website before installing Egg, As I have not tested wether the bun dependency works well on devices without bun installed or not.
 
-## VScode extensions: Syntax highlighting and Hover information
-You could either build and install them yourself, Or download them from the zip file located in the root directory of this repository saved as `egg-extensions.zip`.
+## VScode extensions: Syntax highlighting, Error checking and Hover information
+You should build and install it yourself. The features are documented in the README file in the `extension/` folder.
 
 ## NIM version
 If you want to have a truly low level experience, You could build the nim version instead. The source code is available at `nim/` in this same directory.
