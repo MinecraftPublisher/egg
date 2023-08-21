@@ -31,10 +31,12 @@ function activate(context) {
         let line = document.getText(new vscode.Range(document.lineAt(pos.line).range.start, document.lineAt(document.lineCount - 1).range.end))
         let cmd = document.getText(document.getWordRangeAtPosition(pos, /([A-Za-z]|\.|:|[*+-/])+/g)).split('\n')[0].split(' ')[0]
 
+        if(line.startsWith('#>')) return { contents: [ "This line is a documentation comment." ] }
+        if(line.startsWith('#')) return { contents: [] }
         channel.appendLine("Hover server called '" + cmd + "'")
 
         if (line.startsWith(cmd)) {
-            let tooltip = 'Unknown keyword or command...'
+            let tooltip = '`#> This command is not a valid egg command, Maybe a typo...?`\nUnknown keyword or command...'
 
             const math_op = (cs, op) => {
                 tooltip = cs.map(e => '`' + e + ' <destination> <first_number> <second_number>`').join('\n') + '\nFetches two numbers from memory, ' + op + ', And puts the result into the provided destination address.'
@@ -75,9 +77,6 @@ function activate(context) {
 
             else if (cmd === 'string.index') tooltip = '`string.index <index> <string> <destination>`\nGets the nth character from the provided string and places it in the destination in string memory.'
             else if (cmd === 'string.split') tooltip = '`string.split <separator> <string> <index> <destination>`\nReads the given string from memory, Splits it by the said separator, And places the nth string from the array into the said destination.'
-
-
-            else tooltip = 'Unknown command.'
 
 
 

@@ -1,7 +1,7 @@
 {
 	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
-	"scopeName": "source.egglang",
-	"name": "Egg",
+	"scopeName": "source.egg",
+	"name": "egg",
 	"patterns": [
 		{
 			"include": "#keywords"
@@ -14,34 +14,35 @@
 		"keywords": {
 			"patterns": [
 				{
-				"name": "keyword.other.unit",
-				"begin": ":",
-				"end": "\n"
-			},
-			{
-				"name": "keyword.operator",
-				"begin": "\\b(str::)\\b",
-				"end": " |\n"
-			},
-			{
-				"name": "keyword.operator",
-				"begin": "\\b(num::)\\b",
-				"end": " |\n"
-			},
-			{
-				"name": "keyword.control.less",
-				"match": "\\b(branch|comment|exit|free|goto)\\b"
-			},
-			{
-				"name": "keyword.control.less",
-				"match": "\\b(free|branch|exit|goto|dump|echo|read|readnum|numread|sleep|mod|eval|add|+|subtract|sub|-|multiply|mul|\\*|divide|div|\\/|power|pow|\\*\\*|string\\.index|string\\.split)\\b"
-			},
-			{
-				"name": "comment.block",
-				"begin": "# ",
-				"end": "\n"
-			}
-		]
+					"name": "keyword.other.unit",
+					"begin": "^:",
+					"end": "\n"
+				},
+				{
+					"name": "string.regexp",
+					"begin": "#>",
+					"end": "\n"
+				},
+				{
+					"name": "comment.block",
+					"begin": "#",
+					"end": "\n"
+				},
+				{
+					"name": "keyword.operator",
+					"begin": "str::",
+					"end": " |\n"
+				},
+				{
+					"name": "keyword.operator",
+					"begin": "num::",
+					"end": " |\n"
+				},
+				{
+					"name": "keyword.control.less",
+					"match": "^\\b(free|branch|exit|goto|dump|echo|printf|read|readnum|numread|sleep|mod|eval|add|\\+|subtract|sub|\\-|multiply|mul|\\*|divide|div|\\/|power|pow|\\*\\*|string\\.index|string\\.split)\\b"
+				}
+			]
 		}
 	}
 }

@@ -70,9 +70,10 @@ proc egg(code: string, c_filename: string, c_registry: Registry,
 	    i.n += 1
 	    if i.n >= PROGRAM_REGISTER[filename].split('\n').len: continue
 		var line = PROGRAM_REGISTER[filename].split('\n')[i.n]
-		trace.add(i)
 
+		line = line.replace("\\#", "__TAG__").split('#')[0].replace("__TAG__", "#")
 		if line == "": continue
+		trace.add(i)
 		stack[stack.len - 1] = i
 
 		if line.startsWith(':'):
