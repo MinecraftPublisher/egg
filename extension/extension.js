@@ -1,24 +1,65 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 const vscode = require('vscode')
+const fs = require('fs')
 
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
+let diagnostics
+let channel
 
-/**
- * @param {vscode.ExtensionContext} context
- */
+function processDiagnostics() {
+    const config = vscode.workspace.getConfiguration('egg-server')
+    const url = config.get('ParserURL') === '//default//' ? (__dirname + '/egglsp.js') : config.get('ParserURL')
+
+    if(fs.existsSync(url)) {
+        // channel.appendLine('Trigerred change, Parser URL: ' + url)
+        const text = fs.readFileSync(url, 'utf-8').replace('const vscode = require(\'vscode\')', '')
+        const parser = eval(`const module = { exports: {} };; ${text};; module.exports`)
+        // channel.appendLine('Parser version: ' + parser.version)
+    
+        const document = vscode.window.activeTextEditor.document
+        const output = parser.lsp(document)
+        let o = []
+    
+        for (let item of output) {
+            const range = new vscode.Range(
+                new vscode.Position(item.position.start.line, item.position.start.character),
+                new vscode.Position(item.position.end.line, item.position.end.character)
+            )
+    
+            o.push(new vscode.Diagnostic(range, item.message, item.type))
+        }
+    
+        return o
+    } else {
+        vscode.window.showWarningMessage('Could not find language server for egg.')
+        return []
+    }
+}
+
+/** @param {vscode.ExtensionContext} context */
 function activate(context) {
-    // Use the console to output diagnostic information (console.log) and errors (console.error)
-    // This line of code will only be executed once when your extension is activated
-    const channel = vscode.window.createOutputChannel("Egg")
+    channel = vscode.window.createOutputChannel("Egg")
     channel.appendLine("Extension activated")
 
-    let disposable = vscode.commands.registerCommand('egg-server.Check', function () {
-        vscode.window.showWarningMessage('Checking is not implemented yet!')
+    diagnostics = vscode.languages.createDiagnosticCollection('egg')
+
+    context.subscriptions.push(diagnostics)
+    vscode.workspace.onDidChangeTextDocument((e) => {
+        if (e) {
+            let diagnosis = processDiagnostics()
+
+            diagnostics.set(vscode.window.activeTextEditor.document.uri, diagnosis)
+        }
     })
 
-    context.subscriptions.push(disposable)
+    vscode.commands.registerCommand('egg-server.Check', () => {
+        vscode.window.showInformationMessage('Checking document...')
+        let diagnosis = processDiagnostics()
+
+        diagnostics.set(vscode.window.activeTextEditor.document.uri, diagnosis)
+    })
+
+    let diagnosis = processDiagnostics()
+
+    diagnostics.set(vscode.window.activeTextEditor.document.uri, diagnosis)
 
     /**
      * 
@@ -31,8 +72,8 @@ function activate(context) {
         let line = document.getText(new vscode.Range(document.lineAt(pos.line).range.start, document.lineAt(document.lineCount - 1).range.end))
         let cmd = document.getText(document.getWordRangeAtPosition(pos, /([A-Za-z]|\.|:|[*+-/])+/g)).split('\n')[0].split(' ')[0]
 
-        if(line.startsWith('#>')) return { contents: [ "This line is a documentation comment." ] }
-        if(line.startsWith('#')) return { contents: [] }
+        if (line.startsWith('#>')) return { contents: ["This line is a documentation comment."] }
+        if (line.startsWith('#')) return { contents: [] }
         channel.appendLine("Hover server called '" + cmd + "'")
 
         if (line.startsWith(cmd)) {
@@ -92,8 +133,6 @@ function activate(context) {
             //@ts-ignore
             tooltip = tooltip.replaceAll('```egg\n' + code + '\n```\n', '')
 
-            channel.appendLine('tooltip: ' + tooltip)
-            channel.appendLine('header: ' + header)
             return {
                 contents: [
                     header,
@@ -114,7 +153,6 @@ function activate(context) {
     channel.appendLine('Registered hover server')
 }
 
-// This method is called when your extension is deactivated
 function deactivate() { }
 
 module.exports = {

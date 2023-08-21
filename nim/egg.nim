@@ -1,5 +1,7 @@
 #? replace(sub = "\t", by = "    ")
 
+const VERSION = "1.0"
+
 import strformat, strutils, sequtils, tables, re, os, sugar, math
 
 import "mod/import.nim"
@@ -219,9 +221,10 @@ if DEVOLVE == "00000000":
 	echo "Bundled egg"
 
 proc help() =
+	echo "Egg interpeter - v" & VERSION
 	echo "Usage:"
-	echo "      "
-	echo "		egg run [files]"
+	echo "	egg help"
+	echo "	egg run [files]"
 
 if paramCount() > 0:
     var cmd = paramStr(1)

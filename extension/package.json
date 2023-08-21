@@ -1,8 +1,8 @@
 {
 	"name": "egg-server",
 	"displayName": "Egg Language Support",
-	"description": "Adds support for egg scripts, Syntax higlighting, And hover information for all available commands.",
-	"version": "1.3.3",
+	"description": "Adds support for egg scripts, Syntax higlighting, Error checking, And hover information for all available commands.",
+	"version": "1.4",
 	"engines": {
 		"vscode": "^1.80.1"
 	},
@@ -36,10 +36,16 @@
 				"path": "./syntaxes/egg.tmLanguage.json"
 			}
 		],
-		"commands": [
+		"configuration": [
 			{
-				"command": "egg-server.Check",
-				"title": "Egg: Check project"
+				"title": "Egg language",
+				"properties": {
+					"egg-server.ParserURL": {
+						"type": "string",
+						"default": "//default//",
+						"description": "Absolute path for egg diagnostic checker. (the '//default//' value is replaced with the builtin diagnostic checker at runtime.)"
+					}
+				}
 			}
 		]
 	},
@@ -48,14 +54,30 @@
 		"onLanguage:*"
 	],
 	"devDependencies": {
-		"@types/vscode": "^1.80.1",
 		"@types/glob": "^8.1.0",
 		"@types/mocha": "^10.0.1",
-		"@types/node": "20.2.5",
+		"@types/node": "^20.5.1",
+		"@vscode/test-electron": "^2.3.2",
 		"eslint": "^8.41.0",
 		"glob": "^8.1.0",
 		"mocha": "^10.2.0",
-		"typescript": "^5.1.3",
-		"@vscode/test-electron": "^2.3.2"
+		"typescript": "^5.1.3"
+	},
+	"configuration": {
+		"type": "object",
+		"title": "Egg Language Server",
+		"properties": {
+			"languageServerExample.maxNumberOfProblems": {
+				"scope": "resource",
+				"type": "number",
+				"default": 50,
+				"description": "Controls the maximum number of problems produced by the server."
+			}
+		}
+	},
+	"dependencies": {
+		"@types/vscode": "^1.81.0",
+		"vscode": "^1.1.37",
+		"vscode-languageclient": "^8.1.0"
 	}
 }
