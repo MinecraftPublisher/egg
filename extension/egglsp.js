@@ -97,16 +97,18 @@ module.exports = {
 				let space = check.space
 				let args = check.args
 
-				if ((command === 'free' || command === 'dump') && !(args in str_memory) && !(args in num_memory)) diagnosis.push({
-					type: vscode.DiagnosticSeverity.Error,
-					message: 'Variable \'' + args + '\' not found.',
-					position: {
-						start: { line: i, character: command.length + space },
-						end: { line: i, character: line.length }
-					}
-				})
+				if ((command === 'free' || command === 'dump')) {
+					if (!(args in str_memory) && !(args in num_memory)) diagnosis.push({
+						type: vscode.DiagnosticSeverity.Error,
+						message: 'Variable \'' + args + '\' not found.',
+						position: {
+							start: { line: i, character: command.length + space },
+							end: { line: i, character: line.length }
+						}
+					})
+				}
 
-				if (command === 'branch') {
+				else if (command === 'branch') {
 					let condition = args.split(' ')[0]
 					let trueCase = args.split(' ')[1]
 					let falseCase = args.split(' ')[2]
@@ -139,20 +141,24 @@ module.exports = {
 					})
 				}
 
-				else if (command === 'goto' && !segments.includes(args)) diagnosis.push({
-					type: vscode.DiagnosticSeverity.Error,
-					message: 'Cannot find segment \'' + args + '\' in goto.',
-					position: {
-						start: { line: i, character: command.length + space },
-						end: { line: i, character: command.length + space + args.length }
+				else if (command === 'goto') {
+					if (!segments.includes(args)) {
+						diagnosis.push({
+							type: vscode.DiagnosticSeverity.Error,
+							message: 'Cannot find segment \'' + args + '\' in goto.',
+							position: {
+								start: { line: i, character: command.length + space },
+								end: { line: i, character: command.length + space + args.length }
+							}
+						})
 					}
-				})
+				}
 
 				else if (command === 'echo' || command === 'printf') {
 					let matches = args.match(/%{[^} ]+}/g) ?? []
-					for(let match of matches) {
+					for (let match of matches) {
 						let varname = match.substring(2, match.length - 1)
-						if(!(varname in num_memory) && !(varname in str_memory)) diagnosis.push({
+						if (!(varname in num_memory) && !(varname in str_memory)) diagnosis.push({
 							type: vscode.DiagnosticSeverity.Error,
 							message: 'Cannot find variable \'' + varname + '\' in ' + command + '.',
 							position: {
@@ -178,9 +184,9 @@ module.exports = {
 
 				else if (command === 'eval') {
 					let matches = args.match(/%{[^} ]+}/g) ?? []
-					for(let match of matches) {
+					for (let match of matches) {
 						let varname = match.substring(2, match.length - 1)
-						if(!(varname in num_memory) && !(varname in str_memory)) diagnosis.push({
+						if (!(varname in num_memory) && !(varname in str_memory)) diagnosis.push({
 							type: vscode.DiagnosticSeverity.Error,
 							message: 'Cannot find variable \'' + varname + '\' in eval.',
 							position: {
@@ -203,7 +209,7 @@ module.exports = {
 					let num1 = args.split(' ')[1]
 					let num2 = args.split(' ')[2]
 
-					if(!(dest in num_memory)) diagnosis.push({
+					if (!(dest in num_memory)) diagnosis.push({
 						type: vscode.DiagnosticSeverity.Error,
 						message: 'Cannot find variable \'' + dest + '\' in ' + command + '.',
 						position: {
@@ -237,6 +243,19 @@ module.exports = {
 
 				else if (command === 'string.split') {
 					//TODO IMPLEMENT STRING SPLIT
+				}
+
+				else {
+					if (!command.startsWith(':') && !command.startsWith('num::') && !command.startsWith('str::')) {
+						diagnosis.push({
+							type: vscode.DiagnosticSeverity.Error,
+							message: 'Invalid or unknown command \'' + command + '\'.',
+							position: {
+								start: { line: i, character: 0 },
+								end: { line: i, character: command.length }
+							}
+						})
+					}
 				}
 			}
 

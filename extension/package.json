@@ -2,7 +2,7 @@
 	"name": "egg-server",
 	"displayName": "Egg Language Support",
 	"description": "Adds support for egg scripts, Syntax higlighting, Error checking, And hover information for all available commands.",
-	"version": "1.4.0",
+	"version": "1.4.1",
 	"engines": {
 		"vscode": "^1.80.1"
 	},

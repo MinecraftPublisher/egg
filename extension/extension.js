@@ -5,6 +5,7 @@ let diagnostics
 let channel
 
 function processDiagnostics() {
+    if(vscode.window.activeTextEditor.document.languageId !== 'egg') return []
     const config = vscode.workspace.getConfiguration('egg-server')
     const url = config.get('ParserURL') === '//default//' ? (__dirname + '/egglsp.js') : config.get('ParserURL')
 
