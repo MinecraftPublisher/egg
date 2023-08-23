@@ -159,7 +159,7 @@ module.exports = {
 					for (let match of matches) {
 						let varname = match.substring(2, match.length - 1)
 						if (!(varname in num_memory) && !(varname in str_memory)) diagnosis.push({
-							type: vscode.DiagnosticSeverity.Error,
+							type: vscode.DiagnosticSeverity.Warning,
 							message: 'Cannot find variable \'' + varname + '\' in ' + command + '.',
 							position: {
 								start: { line: i, character: line.indexOf(match) },
@@ -180,6 +180,14 @@ module.exports = {
 
 				else if (command === 'mod') {
 					//TODO IMPLEMENT MOD
+					diagnosis.push({
+						type: vscode.DiagnosticSeverity.Hint,
+						message: 'The language features for this command have not been implemented yet.',
+						position: {
+							start: { line: i, character: 0 },
+							end: { line: i, character: line.length }
+						}
+					})
 				}
 
 				else if (command === 'eval') {
@@ -187,7 +195,7 @@ module.exports = {
 					for (let match of matches) {
 						let varname = match.substring(2, match.length - 1)
 						if (!(varname in num_memory) && !(varname in str_memory)) diagnosis.push({
-							type: vscode.DiagnosticSeverity.Error,
+							type: vscode.DiagnosticSeverity.Warning,
 							message: 'Cannot find variable \'' + varname + '\' in eval.',
 							position: {
 								start: { line: i, character: line.indexOf(match) },
@@ -239,10 +247,56 @@ module.exports = {
 
 				else if (command === 'string.index') {
 					//TODO IMPLEMENT STRING INDEX
+					diagnosis.push({
+						type: vscode.DiagnosticSeverity.Hint,
+						message: 'The language features for this command have not been implemented yet.',
+						position: {
+							start: { line: i, character: 0 },
+							end: { line: i, character: line.length }
+						}
+					})
 				}
 
 				else if (command === 'string.split') {
 					//TODO IMPLEMENT STRING SPLIT
+					diagnosis.push({
+						type: vscode.DiagnosticSeverity.Hint,
+						message: 'The language features for this command have not been implemented yet.',
+						position: {
+							start: { line: i, character: 0 },
+							end: { line: i, character: line.length }
+						}
+					})
+				}
+
+				else if (command === 'fs.read') {
+					let filename = args.split(' ')[0]
+					let dest = args.split(' ')[1]
+
+					if(!(filename in str_memory)) diagnosis.push({
+						type: vscode.DiagnosticSeverity.Error,
+						message: 'Cannot find variable \'' + filename + '\' for fs.read!',
+						position: {
+							start: { line: i, character: command.length + space },
+							end: { line: i, character: command.length + space + filename.length }
+						}
+					})
+
+					str_memory[dest] = filename
+				}
+
+				else if (command === 'fs.write') {
+					let filename = args.split(' ')[0]
+					let data = args.split(' ')[1]
+
+					if(!(filename in str_memory)) diagnosis.push({
+						type: vscode.DiagnosticSeverity.Error,
+						message: 'Cannot find variable \'' + filename + '\' for fs.read!',
+						position: {
+							start: { line: i, character: command.length + space },
+							end: { line: i, character: command.length + space + filename.length }
+						}
+					})
 				}
 
 				else {

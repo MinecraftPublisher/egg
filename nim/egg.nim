@@ -168,6 +168,8 @@ proc egg(code: string, c_filename: string, c_registry: Registry,
 		mod_operations_math()
 		mod_operations_d_string()
 
+		mod_fs()
+
 		#[
 			--------------------------------------------------------------------
 			File: mod/operations/conditions.nim

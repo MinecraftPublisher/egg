@@ -120,6 +120,8 @@ function activate(context) {
             else if (cmd === 'string.index') tooltip = '`string.index <index> <string> <destination>`\nGets the nth character from the provided string and places it in the destination in string memory.'
             else if (cmd === 'string.split') tooltip = '`string.split <separator> <string> <index> <destination>`\nReads the given string from memory, Splits it by the said separator, And places the nth string from the array into the said destination.'
 
+            else if (cmd === 'fs.read') tooltip = '`fs.read <filename_variable> <destination>`\nReads a file from the filesystem and puts the content in a variable.'
+            else if (cmd === 'fs.write') tooltip = '`fs.write <filename_variable> <data_variable>`\nWrites the contents of the specified variable to a file in the filesystem.'
 
 
             //@ts-ignore
