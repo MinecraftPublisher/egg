@@ -17,7 +17,7 @@ template mod_io_read() =
 			num_memory[target] = n
 			return returnAction.PEACEFUL
 		except CatchableError:
-			echo fmt"CRITICAL ERROR: Input from stdin is not a number at line {i.n + 1}!"
+			SetFailure(fmt"CRITICAL ERROR: Input from stdin is not a number at line {i.n + 1}")
 			return returnAction.CRITICAL
 
 	internals["numread"] = readInt

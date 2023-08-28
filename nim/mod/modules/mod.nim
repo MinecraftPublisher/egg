@@ -19,7 +19,7 @@ template mod_modules_mod() =
 	
 		if args.endsWith(".egg") and (args.startswith("./") or args.startsWith("../") or args.startsWith("/")):
 			if not fileExists(args):
-				echo fmt"CRITICAL FAILURE: Couldn't find file '{args}' in filesystem to import at line {i.n + 1}!"
+				SetFailure(fmt"Couldn't find file '{args}' in filesystem to import at line {i.n + 1}")
 				return returnAction.CRITICAL
 	
 	        PROGRAM_REGISTER[filename & " > " & args] = readFile(args)
@@ -50,7 +50,7 @@ template mod_modules_mod() =
 			
 				return returnAction.PEACEFUL
 			else:
-				echo fmt"CRITICAL FAILURE: Couldn't find package '{args}' in internal package repository or the registry to import at line {i.n + 1}! (detected package directory: {eggpath})"
+				SetFailure(fmt"Couldn't find package '{args}' in internal package repository or the registry to import at line {i.n + 1} (detected package directory: {eggpath})")
 				return returnAction.CRITICAL
 
 	internals["mod"] = d_mod

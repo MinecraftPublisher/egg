@@ -5,29 +5,29 @@ let diagnostics
 let channel
 
 function processDiagnostics() {
-    if(vscode.window.activeTextEditor.document.languageId !== 'egg') return []
+    if (vscode.window.activeTextEditor.document.languageId !== 'egg') return []
     const config = vscode.workspace.getConfiguration('egg-server')
     const url = config.get('ParserURL') === '//default//' ? (__dirname + '/egglsp.js') : config.get('ParserURL')
 
-    if(fs.existsSync(url)) {
+    if (fs.existsSync(url)) {
         // channel.appendLine('Trigerred change, Parser URL: ' + url)
         const text = fs.readFileSync(url, 'utf-8').replace('const vscode = require(\'vscode\')', '')
         const parser = eval(`const module = { exports: {} };; ${text};; module.exports`)
         // channel.appendLine('Parser version: ' + parser.version)
-    
+
         const document = vscode.window.activeTextEditor.document
         const output = parser.lsp(document)
         let o = []
-    
+
         for (let item of output) {
             const range = new vscode.Range(
                 new vscode.Position(item.position.start.line, item.position.start.character),
                 new vscode.Position(item.position.end.line, item.position.end.character)
             )
-    
+
             o.push(new vscode.Diagnostic(range, item.message, item.type))
         }
-    
+
         return o
     } else {
         vscode.window.showWarningMessage('Could not find language server for egg.')
@@ -84,6 +84,10 @@ function activate(context) {
                 tooltip = cs.map(e => '`' + e + ' <destination> <first_number> <second_number>`').join('\n') + '\nFetches two numbers from memory, ' + op + ', And puts the result into the provided destination address.'
             }
 
+            const cond_op = (cs, op) => {
+                tooltip = cs.map(e => '`' + e + ' <destination> <first_value> <second_value>`').join('\n') + '\nFetches two values from memory, ' + op + ', And puts the result into the provided destination address.'
+            }
+
             if (cmd.startsWith(':')) tooltip = '`:<segment>`\nCreates a segment with the name \'' + cmd.substring(1) + '\'.'
 
 
@@ -93,7 +97,7 @@ function activate(context) {
 
 
             else if (cmd === 'free') tooltip = '`free <name>`\nFrees a value from memory.'
-            else if (cmd === 'branch') tooltip = '`branch <condition_name> <true_case?> <false_case?>`\nChecks if a variable in memory is true. If true, The true_case segment is ran. Otherwise, The false_case segment is ran.'
+            else if (cmd === 'branch' || cmd === 'if') tooltip = '`branch <condition_name> <true_case?> <false_case?>`\n`if <condition_name> <true_case?> <false_case?>`\nChecks if a variable in memory is true. If true, The true_case segment is ran. Otherwise, The false_case segment is ran.'
             else if (cmd === 'exit') tooltip = '`exit`\nImmediately exits the program.'
             else if (cmd === 'goto') tooltip = '`goto <segment>`\nPushes current location to the stack and immediately executes the next line of the provided segment.'
             else if (cmd === 'dump') tooltip = '`dump <name>`\nDumps a variable value from memory to console.'
@@ -119,10 +123,24 @@ function activate(context) {
 
             else if (cmd === 'string.index') tooltip = '`string.index <index> <string> <destination>`\nGets the nth character from the provided string and places it in the destination in string memory.'
             else if (cmd === 'string.split') tooltip = '`string.split <separator> <string> <index> <destination>`\nReads the given string from memory, Splits it by the said separator, And places the nth string from the array into the said destination.'
+            else if (cmd === 'string.append') tooltip = '`string.append <destination> <left_string> <right_string>`\nAppends two strings from memory together and stores the result in the provided destination.'
 
             else if (cmd === 'fs.read') tooltip = '`fs.read <filename_variable> <destination>`\nReads a file from the filesystem and puts the content in a variable.'
             else if (cmd === 'fs.write') tooltip = '`fs.write <filename_variable> <data_variable>`\nWrites the contents of the specified variable to a file in the filesystem.'
 
+
+            else if (['equals', 'eq', '='].includes(cmd)) cond_op(['equals', 'eq', '='], 'Returns true if the two values are equal')
+
+            else if (['and', '&'].includes(cmd)) cond_op(['and', '&'], 'Returns true if both values are true')
+            else if (['or', '|'].includes(cmd)) cond_op(['or', '|'], 'Returns true if one of the values is true')
+
+            else if (['not', '!'].includes(cmd)) tooltip = ['not', '!'].map(e => '`' + e + ' <destination> <value>`').join('\n') + '\nFetches value from memory, Negates the value, And puts the result into the provided destination address.'
+
+            else if (['morethan', 'more', '>'].includes(cmd)) cond_op(['morethan', 'more', '>'], 'Returns true if the first value is more than the second')
+            else if (['lessthan', 'less', '<'].includes(cmd)) cond_op(['lessthan', 'less', '<'], 'Returns true if the first value is less than the second')
+
+            else if (['morequals', 'meq', '>='].includes(cmd)) cond_op(['morequals', 'meq', '>='], 'Returns true if the first value is more than or equals to the second')
+            else if (['lessequals', 'leq', '<='].includes(cmd)) cond_op(['lessquals', 'leq', '<='], 'Returns true if the first value is less than or equals to the second')
 
             //@ts-ignore
             tooltip = tooltip.split('\n').map(e => `- ${e}`).join('\n').replaceAll(/- `[^`]+`/g, (g) => `\`\`\`egg\n${g.substring(3, g.length - 1)}\n\`\`\``).replaceAll('```\n```egg', '\n').replaceAll(/\n{2,}/g, '\n')

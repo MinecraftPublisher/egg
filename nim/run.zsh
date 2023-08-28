@@ -15,3 +15,6 @@ echo
 echo
 # negg run program.egg
 # ./egg run program.egg
+egg
+
+sudo cp ./build/debug /usr/local/bin/egg

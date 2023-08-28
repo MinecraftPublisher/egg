@@ -1,8 +1,8 @@
 #? replace(sub = "\t", by = "    ")
 
-const VERSION = "1.0"
+const VERSION = "1.4"
 
-import strformat, strutils, sequtils, tables, re, os, sugar, math
+import strformat, strutils, sequtils, tables, re, os, sugar, math, terminal
 
 import "mod/import.nim"
 importMods()
@@ -38,6 +38,10 @@ type Eggception = ref object of CatchableError
 
 var PROGRAM_REGISTER: Table[string, string] = initTable[string, string]()
 
+var FailureReason = ""
+proc SetFailure(reason: string) =
+	FailureReason = reason
+
 proc Inception(iturn: Return) =
 	var e: Eggception
 	new(e)
@@ -50,9 +54,62 @@ proc Inception(iturn: Return) =
 
 	var file = PROGRAM_REGISTER[e.stackTrace[e.stackTrace.len - 2].program]
 	var content = file.split('\n')[e.stackTrace[e.stackTrace.len - 2].n]
-	e.msg = fmt"Critical program exit. Line '{e.stackTrace[e.stackTrace.len - 2].n}' " & 
-		fmt"Program '{e.stackTrace[e.stackTrace.len - 2].program}' Content '{content}'"
-	raise e
+	echo ""
+	styledEcho fgRed, styleBright, "[🔎] Stack trace:"
+	var program = ""
+	for i in 0..(e.stackTrace.len - 2):
+		var val = e.stackTrace[i]
+		var depth = val.program.split('>').len
+		var count = 0
+
+		if val.program.startsWith(program) and (program != val.program) and (" > " in val.program):
+			# echo "hi"
+			var subprogram = val.program[(program.len + 3)..(val.program.len - 1)]
+
+			echo ""
+			count = 0
+
+			for i in 0..(depth - 2):
+				stdout.write "    "
+				count += 4
+			
+			var echovar = fmt"[📄] Program '{subprogram}'"
+			count += echovar.len
+			styledEcho fgGreen, styleBright, echovar
+
+			program = val.program
+			stdout.write "    "
+
+		elif program.startsWith(val.program) and (program != val.program):
+			var subprogram = program[0..(val.program.len - 1)]
+
+			echo ""
+			count = 0
+
+			for i in 0..(depth - 2):
+				stdout.write "    "
+				count += 4
+			
+			program = subprogram
+
+		elif program != val.program:
+			program = val.program
+
+			var echovar = fmt"[📄] Program '{val.program}'"
+			count += echovar.len
+			styledEcho fgGreen, styleBright, echovar
+		
+		var echovar = fmt"    Line {val.n + 1}"
+		count += echovar.len
+		
+		styledEcho fgMagenta, echovar, resetStyle #, " (", fgWhite, bgBlue, styleBright, PROGRAM_REGISTER[val.program].split('\n')[val.n], resetStyle, ")"
+		# echo fmt"{PROGRAM_REGISTER[val.program].split('\n')[val.n]}` )"
+	
+	echo ""
+	var val = e.stackTrace[e.stackTrace.len - 2]
+	# styledEcho fgYellow, styleBright, "[📎] Critical error occured here '", fgCyan, val.program, fgYellow, "' line ", fgCyan, $(val.n + 1)
+	styledEcho fgYellow, styleBright, "[❌] CRITICAL ERROR: ", fgCyan, FailureReason, "!"
+	styledEcho fgYellow, styleBright, "[❗️] Critical program exit. Line ", fgRed, $(val.n + 1), fgYellow, " Program '", fgRed, val.program, fgYellow, "' Content '", fgRed, content, fgYellow, "'"
 
 proc egg(code: string, c_filename: string, c_registry: Registry,
 		c_num_memory: NumberMemory, c_str_memory: StringMemory): Return =
@@ -68,10 +125,10 @@ proc egg(code: string, c_filename: string, c_registry: Registry,
 	var i: Trace = Trace(n: -1, program: filename)
 
 	stack.add(i)
-	while i.n < PROGRAM_REGISTER[filename].split('\n').len:
-	    i.n += 1
-	    if i.n >= PROGRAM_REGISTER[filename].split('\n').len: continue
-		var line = PROGRAM_REGISTER[filename].split('\n')[i.n]
+	while i.n < PROGRAM_REGISTER[i.program].split('\n').len:
+		i.n += 1
+	    if i.n >= PROGRAM_REGISTER[i.program].split('\n').len: continue
+		var line = PROGRAM_REGISTER[i.program].split('\n')[i.n]
 
 		line = line.replace("\\#", "__TAG__").split('#')[0].replace("__TAG__", "#")
 		if line == "": continue
@@ -79,9 +136,10 @@ proc egg(code: string, c_filename: string, c_registry: Registry,
 		stack[stack.len - 1] = i
 
 		if line.startsWith(':'):
-			if stack.len != 1:
+			if stack.len > 1:
 				discard stack.pop
 				i = stack[stack.len - 1]
+				i.n -= 1
 
 				continue
 
@@ -90,19 +148,19 @@ proc egg(code: string, c_filename: string, c_registry: Registry,
 
 			if name != "main":
 				i.n += 1
-				while i.n < PROGRAM_REGISTER[filename].split('\n').len and (not PROGRAM_REGISTER[filename].split('\n')[i.n].startsWith(":main")):
-					if PROGRAM_REGISTER[filename].split('\n')[i.n].startsWith(":"):
-						var name = PROGRAM_REGISTER[filename].split('\n')[i.n].substr(1).split(' ')[0]
+				while i.n < PROGRAM_REGISTER[i.program].split('\n').len and (not PROGRAM_REGISTER[i.program].split('\n')[i.n].startsWith(":main")):
+					if PROGRAM_REGISTER[i.program].split('\n')[i.n].startsWith(":"):
+						var name = PROGRAM_REGISTER[i.program].split('\n')[i.n].substr(1).split(' ')[0]
 						registry[name] = i
 					i.n += 1
-					# if i.n >= PROGRAM_REGISTER[filename].split('\n').len: break
+					# if i.n >= PROGRAM_REGISTER[i.program].split('\n').len: break
 			continue
 
 		if line.startsWith("str::"):
 			var name = line.substr(5).split(' ')[0]
 			# try:
 			    # discard parseFloat(name)
-				# echo fmt"CRITICAL FAILURE: Variable name cannot be an integer constant at line {i.n + 1}!"
+				# SetFailure(fmt"Variable name cannot be an integer constant at line {i.n + 1}")
 				# return Return(
 				# 	stackTrace: concat(trace, @[Trace(n: -1,
 				#         program: "CRITICAL")]),
@@ -112,16 +170,20 @@ proc egg(code: string, c_filename: string, c_registry: Registry,
 				# )
 			# except CatchableError:
 			
-			var space = line.findAll(re"[ \t]+")[0].len
-			var args = line.substr(name.len + space + 5)
-		    str_memory[name] = args
-		    continue
+			var space = line.findAll(re"[ \t]+")
+			if space.len == 0:
+				str_memory[name] = ""
+				continue
+			
+			var args = line.substr(name.len + space[0].len + 5)
+	    	str_memory[name] = args
+	    	continue
 
 		elif line.startsWith("num::"):
 			var name = line.substr(5).split(' ')[0]
 			try:
 			    discard parseFloat(name)
-			    echo fmt"CRITICAL FAILURE: Variable name cannot be an integer constant at line {i.n + 1}!"
+			    SetFailure(fmt"Variable name cannot be an integer constant at line {i.n + 1}")
 			    return Return(
 			    	stackTrace: concat(trace, @[Trace(n: -1,
 						program: "CRITICAL")]),
@@ -136,7 +198,7 @@ proc egg(code: string, c_filename: string, c_registry: Registry,
 				    num_memory[name] = args
 				    continue
 			    except CatchableError:
-    				echo fmt"CRITICAL FAILURE: Couldn't convert '{line.substr(name.len + space + 5)}' to number at line {i.n + 1}!"
+    				SetFailure(fmt"Couldn't convert '{line.substr(name.len + space + 5)}' to number at line {i.n + 1}")
 	    			return Return(
 		    			stackTrace: concat(trace, @[Trace(n: -1,
 			    				program: "CRITICAL")]),
@@ -146,16 +208,23 @@ proc egg(code: string, c_filename: string, c_registry: Registry,
 		    		)
 
 		var command = line.split(re"[ \t]+")[0]
-		var space = line.findAll(re"[ \t]+")[0].len
-		var args = line.substr(command.len + space)
+		var space = 0
+		var args = ""
+
+		if line.findAll(re"[ \t]+").len == 0:
+			space = 0
+			args = ""
+		else:
+			space = line.findAll(re"[ \t]+")[0].len
+			args = line.substr(command.len + space)
 
 		var internals: Internals = initTable[string, Action]()
 
-		mod_default_comment()
 		mod_default_free()
-		mod_default_branch()
 		mod_default_exit()
 		mod_default_goto()
+		mod_default_branch()
+		mod_default_comment()
 
 		mod_io_dump()
 		mod_io_echo()
@@ -164,19 +233,16 @@ proc egg(code: string, c_filename: string, c_registry: Registry,
 
 		mod_modules_mod()
 		mod_modules_eval()
+		mod_modules_register()
 
 		mod_operations_math()
 		mod_operations_d_string()
+		mod_operations_conditions()
 
 		mod_fs()
 
-		#[
-			--------------------------------------------------------------------
-			File: mod/operations/conditions.nim
-			-------------------------------------------------------------------- 
-		]#
-
-		command = command.replace('.', '_')
+		# deprecated replace mechanism
+		# command = command.replace('.', '_')
 		var isInternal = internals.hasKey command
 
 		if isInternal:
@@ -191,6 +257,7 @@ proc egg(code: string, c_filename: string, c_registry: Registry,
 					num_memory: num_memory,
 					str_memory: str_memory
 				))
+				return
 			elif returnValue == returnAction.EXIT:
 				return Return(
 					stackTrace: concat(trace, @[Trace(n: -1, program: "EXIT")]),
@@ -199,15 +266,15 @@ proc egg(code: string, c_filename: string, c_registry: Registry,
 					str_memory: str_memory
 				)
 		else:
-			echo fmt"CRITICAL FAILURE: Couldn't spot internal function '{command}' at line {i.n + 1}!"
+			SetFailure(fmt"Couldn't spot internal function '{command}' at line {i.n + 1}")
 
-			return Return(
-					stackTrace: concat(trace, @[Trace(n: -1,
-							program: "CRITICAL")]),
+			Inception(Return(
+					stackTrace: trace,
 					registry: registry,
 					num_memory: num_memory,
 					str_memory: str_memory
-			)
+			))
+			return
 
 	return Return(
 		stackTrace: trace,
@@ -215,6 +282,23 @@ proc egg(code: string, c_filename: string, c_registry: Registry,
 		num_memory: num_memory,
 		str_memory: str_memory
 	)
+
+proc populate_num(): NumberMemory =
+	var table = initTable[string, float]()
+	for i in 1..10000:
+		var s: string = $(i)
+		table[s] = i.float
+	return table
+
+proc populate_str(): StringMemory =
+	var table = initTable[string, string]()
+
+	# fill special characters
+	table["\\n"] = "\n"
+	table["\\r"] = "\r"
+	table["\\0"] = "\0"
+
+	return table
 
 const DEVOLVE = "REVOLVER"
 
@@ -224,30 +308,87 @@ if DEVOLVE == "00000000":
 
 proc help() =
 	echo "Egg interpeter - v" & VERSION
-	echo "Usage:"
-	echo "	egg help"
-	echo "	egg run [files]"
+	# echo "Usage:"
+	# THESE GUYS ARE TAB INDENTED!!
+	echo "	egg help			| Shows this panel."
+	echo "	egg repl			| Opens a REPL interface."
+	echo "	egg [files]		 | Executes the specified files." # this line has weird behavior...?!
+
+# might be used later
+# proc bar() = 
+# 	const interval = 4
+# 	for i in 0..100:
+# 		stdout.styledWriteLine(fgRed, "0% ", fgWhite, '#'.repeat round(i / interval).int, if i > 50: fgGreen else: fgYellow, ' '.repeat(round((103 - i) / interval).int), $i , "%")
+# 		sleep 20
+# 		cursorUp 1
+# 		eraseLine()
+
+stdout.resetAttributes()
 
 if paramCount() > 0:
     var cmd = paramStr(1)
     if cmd == "help":
         help()
-    elif cmd == "run":
-	    var registry = initTable[string, Trace]()
+	elif cmd == "repl":
+		echo "Egg REPL - v" & VERSION
+		echo "Input 'exit()' to exit, Or 'run()' to run all currently inputted code."
+		echo "Input 'clear()' to clear all input code until now."
+		echo "Keep in mind these commands are exclusive to the REPL, And not available in the interpreter itself."
+
+		var code: seq[string] = @[]
+		var registry = initTable[string, Trace]()
 	    var num_memory = initTable[string, float]()
 	    var str_memory = initTable[string, string]()
+
+		while true:
+			var input = ""
+
+			try:
+				stdout.write "> "
+				input = readLine(stdin)
+			except CatchableError:
+				echo "Use 'exit()' to exit the REPL properly."
+				break
+
+			if input == "exit()":
+				echo "Exiting REPL..."
+				break
+			elif input == "run()":
+				PROGRAM_REGISTER["repl"] = code.join("\n")
+    			var ret = egg(code.join("\n"), "repl", registry, num_memory, str_memory)
+
+    			registry = ret.registry
+    			num_memory = ret.num_memory
+    			str_memory = ret.str_memory
+			elif input == "clear()":
+				echo "Cleaned current code buffer."
+				code = @[]
+			else:
+				code.add input
+    elif cmd == "compile":
+		# to be implemented!
+		discard
+	else:
+		var registry = initTable[string, Trace]()
+	    var num_memory = populate_num()
+	    var str_memory = populate_str()
+
+		PROGRAM_REGISTER["__builtin__"] = "# Builtin functions for the egg language.\n:nothing\n"
     
-    	for i in 2..paramCount():
+    	for i in 1..paramCount():
     		var name = paramStr(i)
-    		var file = readFile(name)
+			var file = ""
+    		try:
+				file = readFile(name)
+			except CatchableError:
+				echo fmt"Couldn't find file {name}!"
+				break
+
     		PROGRAM_REGISTER[name] = file
     		var ret = file.egg(name, registry, num_memory, str_memory)
     
     		registry = ret.registry
     		num_memory = ret.num_memory
     		str_memory = ret.str_memory
-    elif cmd == "compile":
-		# to be implemented!
-		discard
 else:
     help()

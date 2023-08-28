@@ -10,15 +10,22 @@ module.exports = {
 
 			/** @type {LSP[]} */
 			let diagnosis = []
-			let segments = []
+			let segments = ['nothing']
 
 			let num_memory = {}
-			let str_memory = {}
+			let str_memory = {
+				"\\n": "\n",
+				"\\r": "\r",
+				"\\0": "\0"
+			}
+
+			for(let i = 0; i < 10000; i++) num_memory[i.toString()] = parseFloat(i.toString())
 
 			let postcheck = []
 
 			for (let i = 0; i < lines.length; i++) {
 				let line = lines[i].trim()
+				let prediagnose = [...diagnosis]
 
 				line = line.replace(/\\#/g, '__TAG__').split('#')[0].replace(/__TAG__/g, '#')
 				if (line === '') continue
@@ -31,14 +38,18 @@ module.exports = {
 					let name = line.substring(5).split(' ')[0]
 					let value = line.substring(5).split(' ').slice(1).join(' ')
 
-					if (value === '') diagnosis.push({
-						type: vscode.DiagnosticSeverity.Warning,
-						message: 'Empty string \'' + name + '\'.',
-						position: {
-							start: { line: i, character: 0 },
-							end: { line: i, character: line.length }
-						}
-					})
+					if (value === '') {
+						// diagnosis.push({
+						// 	type: vscode.DiagnosticSeverity.Information,
+						// 	message: 'Empty string \'' + name + '\'.',
+						// 	position: {
+						// 		start: { line: i, character: 0 },
+						// 		end: { line: i, character: line.length }
+						// 	}
+						// })
+
+						str_memory[name] = ""
+					}
 
 					else str_memory[name] = value
 				}
@@ -80,13 +91,20 @@ module.exports = {
 					num_memory[args.split(' ')[0]] = 0
 				}
 
-				postcheck.push({
-					i,
-					line,
-					command,
-					space,
-					args
-				})
+				if(lines[i - 1].toLowerCase() !== '##ignore') {
+					postcheck.push({
+						i,
+						line,
+						command,
+						space,
+						args,
+						prev: lines[i - 1]
+					})
+
+					if(lines[i - 1].toLowerCase() === '##mute') {
+						diagnosis = [...prediagnose]
+					}
+				}
 			}
 
 			for (let check of postcheck) {
@@ -96,6 +114,8 @@ module.exports = {
 				let command = check.command
 				let space = check.space
 				let args = check.args
+
+				let prediagnose = [...diagnosis]
 
 				if ((command === 'free' || command === 'dump')) {
 					if (!(args in str_memory) && !(args in num_memory)) diagnosis.push({
@@ -108,7 +128,7 @@ module.exports = {
 					})
 				}
 
-				else if (command === 'branch') {
+				else if (command === 'branch' || command === 'if') {
 					let condition = args.split(' ')[0]
 					let trueCase = args.split(' ')[1]
 					let falseCase = args.split(' ')[2]
@@ -217,15 +237,6 @@ module.exports = {
 					let num1 = args.split(' ')[1]
 					let num2 = args.split(' ')[2]
 
-					if (!(dest in num_memory)) diagnosis.push({
-						type: vscode.DiagnosticSeverity.Error,
-						message: 'Cannot find variable \'' + dest + '\' in ' + command + '.',
-						position: {
-							start: { line: i, character: command.length + space },
-							end: { line: i, character: command.length + space + dest.length }
-						}
-					})
-
 					if (!(num1 in num_memory)) diagnosis.push({
 						type: vscode.DiagnosticSeverity.Error,
 						message: 'Cannot find variable \'' + dest + '\' for first number.',
@@ -243,30 +254,66 @@ module.exports = {
 							end: { line: i, character: command.length + space + dest.length + num1.length + num2.length + 2 }
 						}
 					})
+
+					num_memory[dest] = 0
 				}
 
 				else if (command === 'string.index') {
 					//TODO IMPLEMENT STRING INDEX
-					diagnosis.push({
-						type: vscode.DiagnosticSeverity.Hint,
-						message: 'The language features for this command have not been implemented yet.',
-						position: {
-							start: { line: i, character: 0 },
-							end: { line: i, character: line.length }
-						}
-					})
+					// diagnosis.push({
+					// 	type: vscode.DiagnosticSeverity.Information,
+					// 	message: 'The language features for this command are in beta phase.',
+					// 	position: {
+					// 		start: { line: i, character: 0 },
+					// 		end: { line: i, character: line.length }
+					// 	}
+					// })
+
+					let space = args.split(' ')
+					let index = space[0]
+					let str = space[1]
+					let dest = space[2]
+
+					str_memory[dest] = ""
+				}
+
+				else if (command === 'string.append') {
+					//TODO IMPLEMENT STRING INDEX
+					// diagnosis.push({
+					// 	type: vscode.DiagnosticSeverity.Information,
+					// 	message: 'The language features for this command are in beta phase.',
+					// 	position: {
+					// 		start: { line: i, character: 0 },
+					// 		end: { line: i, character: line.length }
+					// 	}
+					// })
+
+					let space = args.split(' ')
+					let dest = space[0]
+					let str1 = space[1]
+					let str2 = space[2]
+
+					str_memory[dest] = str_memory[str1] + str_memory[str2]
 				}
 
 				else if (command === 'string.split') {
 					//TODO IMPLEMENT STRING SPLIT
-					diagnosis.push({
-						type: vscode.DiagnosticSeverity.Hint,
-						message: 'The language features for this command have not been implemented yet.',
-						position: {
-							start: { line: i, character: 0 },
-							end: { line: i, character: line.length }
-						}
-					})
+					// diagnosis.push({
+					// 	type: vscode.DiagnosticSeverity.Information,
+					// 	message: 'The language features for this command are in beta phase.',
+					// 	position: {
+					// 		start: { line: i, character: 0 },
+					// 		end: { line: i, character: line.length }
+					// 	}
+					// })
+
+					let space = args.split(' ')
+					let separator = space[0]
+					let index = space[1]
+					let str = space[2]
+					let dest = space[3]
+
+					str_memory[dest] = ""
 				}
 
 				else if (command === 'fs.read') {
@@ -299,6 +346,57 @@ module.exports = {
 					})
 				}
 
+				else if ([
+					'equals', 'eq', '=',
+					'morethan', 'more', '>', 'lessthan', 'less', '<',
+					'morequals', 'meq', '>=', 'lessequals', 'leq', '<=',
+					'and', '&', 'or', '|'
+				].includes(command)) {
+					//! These commands ALSO require more implementations and pre-guessings to support eval since
+					//! I still haven't set anything up to evaluate conditions before runtime.
+					//! Currently the LSP system just runs over the code and checks variables, Nothing else.
+
+					let dest = args.split(' ')[0]
+					let num1 = args.split(' ')[1]
+					let num2 = args.split(' ')[2]
+
+					if (!(num1 in num_memory) && !(num1 in str_memory)) diagnosis.push({
+						type: vscode.DiagnosticSeverity.Error,
+						message: 'Cannot find variable \'' + dest + '\' for first argument.',
+						position: {
+							start: { line: i, character: command.length + space + dest.length + 1 },
+							end: { line: i, character: command.length + space + dest.length + num1.length + 1 }
+						}
+					})
+
+					if (!(num2 in num_memory) && !(num2 in str_memory)) diagnosis.push({
+						type: vscode.DiagnosticSeverity.Error,
+						message: 'Cannot find variable \'' + num2 + '\' for second argument.',
+						position: {
+							start: { line: i, character: command.length + space + dest.length + num1.length + 2 },
+							end: { line: i, character: command.length + space + dest.length + num1.length + num2.length + 2 }
+						}
+					})
+
+					num_memory[dest] = 0
+				}
+
+				else if (['!', 'not'].includes(command)) {
+					let dest = args.split(' ')[0]
+					let left = args.split(' ')[1]
+
+					if (!(left in num_memory) && !(left in str_memory)) diagnosis.push({
+						type: vscode.DiagnosticSeverity.Error,
+						message: 'Cannot find variable \'' + dest + '\' for first argument.',
+						position: {
+							start: { line: i, character: command.length + space },
+							end: { line: i, character: command.length + space + left.length + 1 }
+						}
+					})
+
+					num_memory[dest] = 0
+				}
+
 				else {
 					if (!command.startsWith(':') && !command.startsWith('num::') && !command.startsWith('str::')) {
 						diagnosis.push({
@@ -310,6 +408,10 @@ module.exports = {
 							}
 						})
 					}
+				}
+
+				if(check.prev.toLowerCase() === '##mute') {
+					diagnosis = [...prediagnose]
 				}
 			}
 

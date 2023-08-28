@@ -7,7 +7,7 @@ template mod_io_sleep() =
             sleep(t.int)
             return returnAction.PEACEFUL
         except CatchableError:
-            echo fmt"CRITICAL FAILURE: Invalid float provided for sleep duration at line {i.n + 1}!"
+            SetFailure(fmt"Invalid float provided for sleep duration at line {i.n + 1}")
             return returnAction.CRITICAL
 
     internals["sleep"] = d_sleep

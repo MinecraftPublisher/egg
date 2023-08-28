@@ -4,13 +4,13 @@ template mod_operations_math() =
 	proc op(handler: (float, float) -> float): returnAction =
 	    var spl = args.split(' ')
 	    if spl.len < 1:
-			echo fmt"CRITICAL FAILURE: Memory address for destination not provided at line {i.n + 1}!"
+			SetFailure(fmt"Memory address for destination not provided at line {i.n + 1}")
 			return returnAction.CRITICAL
 	    if spl.len < 2:
-			echo fmt"CRITICAL FAILURE: Memory address for first integer not provided at line {i.n + 1}"
+			SetFailure(fmt"Memory address for first integer not provided at line {i.n + 1}")
 			return returnAction.CRITICAL
 	    if spl.len < 3:
-			echo fmt"CRITICAL FAILURE: Memory address for second integer not provided at line {i.n + 1}"
+			SetFailure(fmt"Memory address for second integer not provided at line {i.n + 1}")
 			return returnAction.CRITICAL
 
 		var adr1 {.inject.} = spl[1]
@@ -19,7 +19,7 @@ template mod_operations_math() =
 
 		try:
 		    discard parseFloat(dest)
-		    echo fmt"CRITICAL FAILURE: Destination memory address cannot be a number at line {i.n + 1}!"
+		    SetFailure(fmt"Destination memory address cannot be a number at line {i.n + 1}")
 		    return returnAction.CRITICAL
 		except CatchableError:
 		    discard
@@ -33,7 +33,7 @@ template mod_operations_math() =
 			    return returnAction.PEACEFUL
 			except CatchableError:
 			    if not num_memory.hasKey adr2:
-			    	echo fmt"CRITICAL FAILURE: Cannot find number {adr2} in memory at line {i.n + 1}!"
+			    	SetFailure(fmt"Cannot find number {adr2} in memory at line {i.n + 1}")
 			    	return returnAction.CRITICAL
 			    
 			    var num2 = num_memory[adr2]
@@ -42,10 +42,10 @@ template mod_operations_math() =
 			    return returnAction.PEACEFUL
 	    except CatchableError:
 		    if not num_memory.hasKey adr1:
-			    echo fmt"CRITICAL FAILURE: Cannot find number {adr1} in memory at line {i.n + 1}!"
+			    SetFailure(fmt"Cannot find number {adr1} in memory at line {i.n + 1}")
 			    return returnAction.CRITICAL
 		    elif not num_memory.hasKey adr2:
-			    echo fmt"CRITICAL FAILURE: Cannot find number {adr2} in memory at line {i.n + 1}!"
+			    SetFailure(fmt"Cannot find number {adr2} in memory at line {i.n + 1}")
 			    return returnAction.CRITICAL
 		    else:
 			    var num1 = num_memory[adr1]

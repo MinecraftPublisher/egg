@@ -3,7 +3,8 @@
 template mod_modules_eval() =
     proc eval(): returnAction =
 		var str = args
-		for mt in str.findAll(re"%{[^} ]+}"):
+		var founds = str.findAll(re"%{[^} ]+}")
+		for mt in founds:
 			var name = mt.substr(2, mt.len - 2)
 			var res = (if str_memory.hasKey(name): str_memory[name] 
 				elif num_memory.hasKey(name): $(num_memory[name])

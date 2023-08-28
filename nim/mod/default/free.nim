@@ -4,7 +4,7 @@ template mod_default_free() =
     proc free(): returnAction =
         num_memory.del(args)
         str_memory.del(args)
-        return returnAction.PEACEFUL
+        return returnAction.CONTINUE
 
     internals["free"] = free
 

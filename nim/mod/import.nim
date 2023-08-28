@@ -14,9 +14,11 @@ template importMods() =
 
     import "modules/eval.nim"
     import "modules/mod.nim"
+    import "modules/register.nim"
 
     import "operations/d_math.nim"
     import "operations/d_string.nim"
+    import "operations/conditions.nim"
 
     import "fs/fs.nim"
 
