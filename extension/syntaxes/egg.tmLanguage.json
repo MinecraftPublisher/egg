@@ -40,7 +40,7 @@
 				},
 				{
 					"name": "keyword.control.less",
-					"match": "^\\b(free|branch|if|exit|goto|dump|echo|printf|read|readnum|numread|sleep|mod|eval|add|\\+|subtract|sub|\\-|multiply|mul|\\*|divide|div|\\/|power|pow|\\*\\*|string\\.index|string\\.split|fs\\.read|fs\\.write|equals|eq|\\=|morethan|more|\\>|lessthan|less|\\<|morequals|meq|\\>\\=|lessequals|leq|\\<\\=|and|\\&|or|\\||not|\\!|string\\.append)\\b"
+					"match": "^\\b(free|branch|if|exit|goto|dump|echo|printf|read|readnum|numread|sleep|mod|eval|add|\\+|subtract|sub|\\-|multiply|mul|\\*|divide|div|\\/|power|pow|\\*\\*|string\\.index|string\\.split|fs\\.read|fs\\.write|equals|eq|\\=|morethan|more|\\>|lessthan|less|\\<|morequals|meq|\\>\\=|lessequals|leq|\\<\\=|and|\\&|or|\\||not|\\!|string\\.append|reg|registry)\\b"
 				}
 			]
 		}

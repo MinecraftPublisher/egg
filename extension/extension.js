@@ -4,6 +4,8 @@ const fs = require('fs')
 let diagnostics
 let channel
 
+let register_descs = {}
+
 function processDiagnostics() {
     if (vscode.window.activeTextEditor.document.languageId !== 'egg') return []
     const config = vscode.workspace.getConfiguration('egg-server')
@@ -19,13 +21,33 @@ function processDiagnostics() {
         const output = parser.lsp(document)
         let o = []
 
-        for (let item of output) {
+        for (let item of output.diag) {
             const range = new vscode.Range(
                 new vscode.Position(item.position.start.line, item.position.start.character),
                 new vscode.Position(item.position.end.line, item.position.end.character)
             )
 
             o.push(new vscode.Diagnostic(range, item.message, item.type))
+        }
+
+        register_descs = { ...register_descs, ...output.reg }
+        const dec = vscode.window.createTextEditorDecorationType({
+            color: '#66ff75'
+        })
+
+        let txt = document.getText()
+        for(let x of Object.keys(register_descs)) {
+            let val = register_descs[x]
+            
+            while(txt.indexOf(val.reg) > -1) {
+                let line = txt.substring(0, txt.indexOf(val.reg)).split('\n').length
+                if(txt[txt.indexOf(val.reg) - 1] === '\n')
+                    vscode.window.activeTextEditor.setDecorations(dec, [
+                        new vscode.Range(
+                            new vscode.Position(line, 0),
+                            new vscode.Position(line, val.reg.length))
+                        ])
+            }
         }
 
         return o
@@ -51,7 +73,7 @@ function activate(context) {
         }
     })
 
-    vscode.commands.registerCommand('egg-server.Check', () => {
+    vscode.commands.registerCommand('egg-server.Check', async () => {
         vscode.window.showInformationMessage('Checking document...')
         let diagnosis = processDiagnostics()
 
@@ -112,7 +134,7 @@ function activate(context) {
 
             else if (cmd === 'mod') tooltip = '`mod test`\n`mod ./test.egg`\nLoads an egg module and evaluates it.'
             else if (cmd === 'eval') tooltip = '`eval <egg_code>`\nEvaluates egg code given to it and replaces any formatted variable call with its respective value from memory.'
-
+            else if (cmd === 'reg' || cmd === 'registry') tooltip = '`reg <name> <argument_count> <description>`\n`registry <name> <argument_count> <description>`\nRegisters a segment as a command.'
 
             else if (['add', '+'].includes(cmd)) math_op(['add', '+'], 'Adds them together')
             else if (['subtract', 'sub', '-'].includes(cmd)) math_op(['subtract', 'sub', '-'], 'Subtracts the second from the first')
@@ -141,6 +163,8 @@ function activate(context) {
 
             else if (['morequals', 'meq', '>='].includes(cmd)) cond_op(['morequals', 'meq', '>='], 'Returns true if the first value is more than or equals to the second')
             else if (['lessequals', 'leq', '<='].includes(cmd)) cond_op(['lessquals', 'leq', '<='], 'Returns true if the first value is less than or equals to the second')
+
+            else if (register_descs[cmd]) tooltip = register_descs[cmd].desc + '\n\n***This command is registered by a 3rd party.***'
 
             //@ts-ignore
             tooltip = tooltip.split('\n').map(e => `- ${e}`).join('\n').replaceAll(/- `[^`]+`/g, (g) => `\`\`\`egg\n${g.substring(3, g.length - 1)}\n\`\`\``).replaceAll('```\n```egg', '\n').replaceAll(/\n{2,}/g, '\n')
