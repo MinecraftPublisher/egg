@@ -8,7 +8,7 @@ mv ./egg ./build/debug
 
 nim -d:release c egg.nim
 mv ./egg ./build/release
-ln -s ./build/release ./egg
+# ln -s ./build/release ./egg
 
 echo
 echo

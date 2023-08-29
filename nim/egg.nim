@@ -7,6 +7,8 @@ import strformat, strutils, sequtils, tables, re, os, sugar, math, terminal
 import "mod/import.nim"
 importMods()
 
+var IS_OFF = false
+
 type returnAction = enum
 	PEACEFUL = 0,
 	CONTINUE = 1,
@@ -115,7 +117,9 @@ proc Inception(iturn: Return) =
 	var val = e.stackTrace[e.stackTrace.len - 2]
 	# styledEcho fgYellow, styleBright, "[📎] Critical error occured here '", fgCyan, val.program, fgYellow, "' line ", fgCyan, $(val.n + 1)
 	styledEcho fgYellow, styleBright, "[❌] CRITICAL ERROR: ", fgCyan, FailureReason, "!"
-	styledEcho fgYellow, styleBright, "[❗️] Critical program exit. Line ", fgRed, $(val.n + 1), fgYellow, " Program '", fgRed, val.program, fgYellow, "' Content '", fgRed, content, fgYellow, "'"
+	styledEcho fgYellow, styleBright, "[❗️] Critical program exit. Line ", fgRed, fmt"{val.n + 1}", fgYellow, " Program '", fgRed, val.program, fgYellow, "' Content '", fgRed, content, fgYellow, "'"
+	
+	raise e
 
 proc egg(code: string, c_filename: string, c_registry: Registry,
 		c_num_memory: NumberMemory, c_str_memory: StringMemory): Return =
@@ -132,6 +136,7 @@ proc egg(code: string, c_filename: string, c_registry: Registry,
 
 	stack.add(i)
 	while i.n < PROGRAM_REGISTER[i.program].split('\n').len:
+		if IS_OFF: return
 		i.n += 1
 	    if i.n >= PROGRAM_REGISTER[i.program].split('\n').len: continue
 		var line = PROGRAM_REGISTER[i.program].split('\n')[i.n]
@@ -142,10 +147,11 @@ proc egg(code: string, c_filename: string, c_registry: Registry,
 		stack[stack.len - 1] = i
 
 		if line.startsWith(':'):
+			if IS_OFF: return
 			if stack.len > 1:
 				discard stack.pop
 				i = stack[stack.len - 1]
-				i.n -= 1
+				# i.n -= 1
 
 				continue
 
@@ -155,6 +161,7 @@ proc egg(code: string, c_filename: string, c_registry: Registry,
 			if name != "main":
 				i.n += 1
 				while i.n < PROGRAM_REGISTER[i.program].split('\n').len and (not PROGRAM_REGISTER[i.program].split('\n')[i.n].startsWith(":main")):
+					if IS_OFF: return
 					if PROGRAM_REGISTER[i.program].split('\n')[i.n].startsWith(":"):
 						var name = PROGRAM_REGISTER[i.program].split('\n')[i.n].substr(1).split(' ')[0]
 						registry[name] = i
@@ -252,6 +259,7 @@ proc egg(code: string, c_filename: string, c_registry: Registry,
 		var isInternal = internals.hasKey command
 
 		if isInternal:
+			if IS_OFF: return
 			let returnValue = internals[command]()
 
 			if returnValue == returnAction.CONTINUE: continue
@@ -265,6 +273,7 @@ proc egg(code: string, c_filename: string, c_registry: Registry,
 				))
 				return
 			elif returnValue == returnAction.EXIT:
+				IS_OFF = true
 				return Return(
 					stackTrace: concat(trace, @[Trace(n: -1, program: "EXIT")]),
 					registry: registry,
@@ -285,25 +294,20 @@ proc egg(code: string, c_filename: string, c_registry: Registry,
 				))
 				return
 
-			var temp_str = str_memory
-			var temp_num = num_memory
-
-			for i in 0..spl.len:
+			for i in 0..(spl.len - 1):
 				var arg = spl[i]
-				if temp_str.hasKey arg: temp_str[fmt"a{i + 1}"] = temp_str[arg]
-				elif temp_num.hasKey arg: temp_num[fmt"a{i + 1}"] = temp_num[arg]
-			
-			str_memory = temp_str
-			num_memory = temp_num
+				if str_memory.hasKey arg: str_memory[fmt"a{i + 1}"] = str_memory[arg]
+				elif num_memory.hasKey arg: num_memory[fmt"a{i + 1}"] = num_memory[arg]
+				else: str_memory[fmt"a{i + 1}"] = arg
 
 			stack[stack.len - 1] = i
 			stack.add(call.location)
 
 			i = call.location
-			i.n -= 1
+			# i.n -= 1
 			continue
 		else:
-			SetFailure(fmt"Couldn't spot internal function '{command}' at line {i.n + 1}")
+			SetFailure(fmt"Could not spot function '{command}' at line {i.n + 1}")
 
 			Inception(Return(
 					stackTrace: trace,
@@ -323,7 +327,7 @@ proc egg(code: string, c_filename: string, c_registry: Registry,
 proc populate_num(): NumberMemory =
 	var table = initTable[string, float]()
 	for i in 0..10000:
-		var s: string = $(i)
+		var s: string = fmt"{i}"
 		table[s] = i.float
 	return table
 
@@ -364,12 +368,16 @@ proc help() =
 stdout.resetAttributes()
 
 PROGRAM_REGISTER["__builtin__"] = """#> Builtin functions for the egg language.
-:nothing #> Empty segment for branch cases.
-:jmpt #> Jump if true
-eval branch a1 %{a2} nothing #> Check a1 and if it is true, Jump to a2, Otherwise don't do anything
+:nothing
+#> Empty segment for branch cases.
+:jmpt
+#> Jump if true
+eval branch a1 %{a2} nothing
+#> Check a1 and if it is true, Jump to a2, Otherwise don't do anything
 
 :jmpf #> Jump if false
-eval branch a1 nothing %{a2} #> Check a1 and if it is false, Jump to a2, Otherwise don't do anything
+eval branch a1 nothing %{a2}
+#> Check a1 and if it is false, Jump to a2, Otherwise don't do anything
 
 :main
 #> Register "nothing" command
@@ -444,7 +452,7 @@ if paramCount() > 0:
 	    var str_memory = populate_str()
 
 		# save and execute builtin
-    	var ret = PROGRAM_REGISTER["__builtin__"].egg("__builtin__", registry, num_memory, str_memory)
+    	var ret = egg(PROGRAM_REGISTER["__builtin__"], "__builtin__", registry, num_memory, str_memory)
     
     	registry = ret.registry
     	num_memory = ret.num_memory
@@ -461,7 +469,7 @@ if paramCount() > 0:
 				break
 
     		PROGRAM_REGISTER[name] = file
-    		var ret = file.egg(name, registry, num_memory, str_memory)
+			var ret = egg(file, name, registry, num_memory, str_memory)
     
     		registry = ret.registry
     		num_memory = ret.num_memory

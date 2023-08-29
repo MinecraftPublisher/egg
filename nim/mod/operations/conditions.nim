@@ -36,28 +36,28 @@ template mod_operations_conditions() =
     internals["="] = d_equals
     
     proc d_more(): returnAction = 
-        return cond((a, b) => 0, (a, b) => a > b)
+        return cond((a, b) => false, (a, b) => a > b)
 
     internals["morethan"] = d_more
     internals["more"] = d_more
     internals[">"] = d_more
 
     proc d_less(): returnAction =
-        return cond((a, b) => 0, (a, b) => a < b)
+        return cond((a, b) => false, (a, b) => a < b)
     
     internals["lessthan"] = d_less
     internals["less"] = d_less
     internals["<"] = d_less
 
     proc d_moreq(): returnAction =
-        return cond((a, b) => 0, (a, b) => a >= b)
+        return cond((a, b) => false, (a, b) => a >= b)
 
     internals["morequals"] = d_moreq
     internals["meq"] = d_moreq
     internals[">="] = d_moreq
     
     proc d_lessq(): returnAction =
-        return cond((a, b) => 0, (a, b) => a <= b)
+        return cond((a, b) => false, (a, b) => a <= b)
 
     internals["lessequals"] = d_lessq
     internals["leq"] = d_lessq
