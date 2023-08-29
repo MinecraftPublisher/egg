@@ -1,6 +1,6 @@
 #? replace(sub = "\t", by = "    ")
 
-const VERSION = "1.4"
+const VERSION = "1.5"
 
 import strformat, strutils, sequtils, tables, re, os, sugar, math, terminal
 
@@ -36,7 +36,13 @@ type Eggception = ref object of CatchableError
 	num_memory: NumberMemory
 	str_memory: StringMemory
 
+type Register = object
+	location: Trace
+	description: string
+	argumentCount: int
+
 var PROGRAM_REGISTER: Table[string, string] = initTable[string, string]()
+var database: Table[string, Register] = initTable[string, Register]()
 
 var FailureReason = ""
 proc SetFailure(reason: string) =
@@ -176,7 +182,7 @@ proc egg(code: string, c_filename: string, c_registry: Registry,
 				continue
 			
 			var args = line.substr(name.len + space[0].len + 5)
-	    	str_memory[name] = args
+	    	str_memory[name] = args.replace("\\n", "\n")
 	    	continue
 
 		elif line.startsWith("num::"):
@@ -265,6 +271,37 @@ proc egg(code: string, c_filename: string, c_registry: Registry,
 					num_memory: num_memory,
 					str_memory: str_memory
 				)
+		elif database.hasKey command:
+			var spl = args.split(' ')
+			var call = database[command]
+
+			if spl.len != call.argumentCount:
+				SetFailure(fmt"Expected {call.argumentCount}, But got {spl.len} argument(s)")
+				Inception(Return(
+					stackTrace: trace,
+					registry: registry,
+					num_memory: num_memory,
+					str_memory: str_memory
+				))
+				return
+
+			var temp_str = str_memory
+			var temp_num = num_memory
+
+			for i in 0..spl.len:
+				var arg = spl[i]
+				if temp_str.hasKey arg: temp_str[fmt"a{i + 1}"] = temp_str[arg]
+				elif temp_num.hasKey arg: temp_num[fmt"a{i + 1}"] = temp_num[arg]
+			
+			str_memory = temp_str
+			num_memory = temp_num
+
+			stack[stack.len - 1] = i
+			stack.add(call.location)
+
+			i = call.location
+			i.n -= 1
+			continue
 		else:
 			SetFailure(fmt"Couldn't spot internal function '{command}' at line {i.n + 1}")
 
@@ -285,7 +322,7 @@ proc egg(code: string, c_filename: string, c_registry: Registry,
 
 proc populate_num(): NumberMemory =
 	var table = initTable[string, float]()
-	for i in 1..10000:
+	for i in 0..10000:
 		var s: string = $(i)
 		table[s] = i.float
 	return table
@@ -312,6 +349,7 @@ proc help() =
 	# THESE GUYS ARE TAB INDENTED!!
 	echo "	egg help			| Shows this panel."
 	echo "	egg repl			| Opens a REPL interface."
+	echo "	egg builtin 		| Dumps the builtin egg code of the interpreter."
 	echo "	egg [files]		 | Executes the specified files." # this line has weird behavior...?!
 
 # might be used later
@@ -325,6 +363,28 @@ proc help() =
 
 stdout.resetAttributes()
 
+PROGRAM_REGISTER["__builtin__"] = """#> Builtin functions for the egg language.
+:nothing #> Empty segment for branch cases.
+:jmpt #> Jump if true
+eval branch a1 %{a2} nothing #> Check a1 and if it is true, Jump to a2, Otherwise don't do anything
+
+:jmpf #> Jump if false
+eval branch a1 nothing %{a2} #> Check a1 and if it is false, Jump to a2, Otherwise don't do anything
+
+:main
+#> Register "nothing" command
+str::nothing_prompt `nothing`\nDoes nothing.\nUseful for when you do not want to provide a case in the branch command!
+reg nothing 0 nothing_prompt
+
+#> Register "jmpt" command
+str::jmpt_prompt `jmpt <condition> <branch_name>`\nJumps to the provided branch if the condition is true.
+reg jmpt 2 jmpt_prompt
+
+#> Register jmpf command
+str::jmpf_prompt `jmpt <condition> <branch_name>`\nJumps to the provided branch if the condition is false.
+reg jmpf 2 jmpf_prompt
+"""
+
 if paramCount() > 0:
     var cmd = paramStr(1)
     if cmd == "help":
@@ -336,9 +396,17 @@ if paramCount() > 0:
 		echo "Keep in mind these commands are exclusive to the REPL, And not available in the interpreter itself."
 
 		var code: seq[string] = @[]
+
 		var registry = initTable[string, Trace]()
-	    var num_memory = initTable[string, float]()
-	    var str_memory = initTable[string, string]()
+	    var num_memory = populate_num()
+	    var str_memory = populate_str()
+
+		# save and execute builtin
+    	var ret = PROGRAM_REGISTER["__builtin__"].egg("__builtin__", registry, num_memory, str_memory)
+    
+    	registry = ret.registry
+    	num_memory = ret.num_memory
+    	str_memory = ret.str_memory
 
 		while true:
 			var input = ""
@@ -368,13 +436,21 @@ if paramCount() > 0:
     elif cmd == "compile":
 		# to be implemented!
 		discard
+	elif cmd == "builtin":
+		echo PROGRAM_REGISTER["__builtin__"]
 	else:
 		var registry = initTable[string, Trace]()
 	    var num_memory = populate_num()
 	    var str_memory = populate_str()
 
-		PROGRAM_REGISTER["__builtin__"] = "# Builtin functions for the egg language.\n:nothing\n"
+		# save and execute builtin
+    	var ret = PROGRAM_REGISTER["__builtin__"].egg("__builtin__", registry, num_memory, str_memory)
     
+    	registry = ret.registry
+    	num_memory = ret.num_memory
+    	str_memory = ret.str_memory
+
+		# execute input files
     	for i in 1..paramCount():
     		var name = paramStr(i)
 			var file = ""
