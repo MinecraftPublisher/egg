@@ -156,6 +156,7 @@ proc egg(code: string, c_filename: string, c_registry: Registry,
         if i.n >= PROGRAM_REGISTER[i.program].split('\n').len: continue
         var line = PROGRAM_REGISTER[i.program].split('\n')[i.n]
 
+        line = line.replace(re"^( |\t)*", "")
         line = line.replace("\\#", "__TAG__").split('#')[0].replace("__TAG__", "#")
         if line == "": continue
         trace.add(i)
@@ -175,13 +176,18 @@ proc egg(code: string, c_filename: string, c_registry: Registry,
 
             if name != "main":
                 i.n += 1
-                while i.n < PROGRAM_REGISTER[i.program].split('\n').len and (not PROGRAM_REGISTER[i.program].split('\n')[i.n].startsWith(":main")):
+                var temp_line = PROGRAM_REGISTER[i.program].split('\n')[i.n]
+                temp_line = temp_line.replace(re"^( |\t)*", "")
+
+                while i.n < PROGRAM_REGISTER[i.program].split('\n').len and (not temp_line.startsWith(":main")):
                     if IS_OFF: return
-                    if PROGRAM_REGISTER[i.program].split('\n')[i.n].startsWith(":"):
-                        var name = PROGRAM_REGISTER[i.program].split('\n')[i.n].substr(1).split(' ')[0]
+                    if temp_line.startsWith(":"):
+                        var name = temp_line.substr(1).split(' ')[0]
                         registry[name] = i
                     i.n += 1
-                    # if i.n >= PROGRAM_REGISTER[i.program].split('\n').len: break
+
+                    temp_line = PROGRAM_REGISTER[i.program].split('\n')[i.n]
+                    temp_line = temp_line.replace(re"^( |\t)*", "")
             continue
 
         if line.startsWith("str::"):
