@@ -17,6 +17,9 @@
                                 ████████
 ```
 # _@agent\_z_/**egg**
+egg is a **general purpose**, **abstract**, **interpreted**, **type-safe** programming language, with **strict performance** and **manual garbage collection**. egg's syntax is straightforward, and egg's dynamic evaluation also allows to extend the syntax in creative ways.
+
+## installation
 To install egg, Simply run `npm i -g @agent_z/egg`. Want to use another package manager? Check the notice!
 
 ## cli tool
