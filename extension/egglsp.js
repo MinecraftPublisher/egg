@@ -2,27 +2,6 @@ const vscode = require('vscode')
 const child = require('child_process')
 const cmd = require('./cmdE.js')
 
-const __builtin__ = `#> Builtin functions for the egg language.
-:nothing #> Empty segment for branch cases.
-:jmpt #> Jump if true
-eval branch a1 %{a2} nothing #> Check a1 and if it is true, Jump to a2, Otherwise don't do anything
-
-:jmpf #> Jump if false
-eval branch a1 nothing %{a2} #> Check a1 and if it is false, Jump to a2, Otherwise don't do anything
-
-:main
-#> Register "nothing" command
-str::nothing_prompt \`nothing\`\\nDoes nothing.\\nUseful for when you do not want to provide a case in the branch command!
-reg nothing 0 nothing_prompt
-
-#> Register "jmpt" command
-str::jmpt_prompt \`jmpt <condition> <branch_name>\`\\nJumps to the provided branch if the condition is true.
-reg jmpt 2 jmpt_prompt
-
-#> Register jmpf command
-str::jmpf_prompt \`jmpt <condition> <branch_name>\`\\nJumps to the provided branch if the condition is false.
-reg jmpf 2 jmpf_prompt`
-
 const VERSION = '1.6'
 
 /** @type {(document: vscode.TextDocument) => LSP[]}  */
@@ -59,6 +38,7 @@ module.exports = {
 				let prediagnose = [...diagnosis]
 
 				line = line.replace(/\\#/g, '__TAG__').split('#')[0].replace(/__TAG__/g, '#')
+				line = line.replace(/^( |\t)*/g, '')
 				if (line === '') continue
 
 				/// Segment
@@ -302,7 +282,7 @@ module.exports = {
 					}
 
 					//! needs more implementation and pre-guessing to actually be able to check evals
-					diagnosis.push(...LSP_CHECK(args))
+					// diagnosis.push(...LSP_CHECK(args))
 				}
 
 				else if (command === 'reg' || command === 'register') { }
