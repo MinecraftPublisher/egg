@@ -93,7 +93,9 @@ function activate(context) {
      */
     function provideHover(document, pos, token) {
         let line = document.getText(new vscode.Range(document.lineAt(pos.line).range.start, document.lineAt(document.lineCount - 1).range.end))
-        let cmd = document.getText(document.getWordRangeAtPosition(pos, /([A-Za-z]|\.|:|[*+-/])+/g)).split('\n')[0].split(' ')[0]
+        let cmd = document.getText(document.getWordRangeAtPosition(pos, /([A-Za-z_]|_|\.|:)+/g)).split('\n')[0].split(' ')[0]
+        line = line.replace(/^( |\t)*/g, '')
+        cmd = cmd.replace(/^( |\t)*/g, '')
 
         if (line.startsWith('#>')) return { contents: ["This line is a documentation comment."] }
         if (line.startsWith('#')) return { contents: [] }
@@ -134,13 +136,13 @@ function activate(context) {
 
             else if (cmd === 'mod') tooltip = '`mod test`\n`mod ./test.egg`\nLoads an egg module and evaluates it.'
             else if (cmd === 'eval') tooltip = '`eval <egg_code>`\nEvaluates egg code given to it and replaces any formatted variable call with its respective value from memory.'
-            else if (cmd === 'reg' || cmd === 'registry') tooltip = '`reg <name> <argument_count> <description>`\n`registry <name> <argument_count> <description>`\nRegisters a segment as a command.'
+            else if (cmd === 'reg' || cmd === 'register') tooltip = '`reg <name> <argument_count> <description>`\n`register <name> <argument_count> <description>`\nRegisters a segment as a command.'
 
-            else if (['add', '+'].includes(cmd)) math_op(['add', '+'], 'Adds them together')
-            else if (['subtract', 'sub', '-'].includes(cmd)) math_op(['subtract', 'sub', '-'], 'Subtracts the second from the first')
-            else if (['multiply', 'mul', '*'].includes(cmd)) math_op(['multiply', 'mul', '*'], 'Multiplies them')
-            else if (['divide', 'div', '/'].includes(cmd)) math_op(['divide', 'div', '/'], 'Divides the first by the second')
-            else if (['power', 'pow', '**'].includes(cmd)) math_op(['power', 'pow', '**'], 'Raises the first to the second number\'s exponent')
+            else if (['add'].includes(cmd)) math_op(['add'], 'Adds them together')
+            else if (['subtract', 'sub'].includes(cmd)) math_op(['subtract', 'sub'], 'Subtracts the second from the first')
+            else if (['multiply', 'mul'].includes(cmd)) math_op(['multiply', 'mul'], 'Multiplies them')
+            else if (['divide', 'div'].includes(cmd)) math_op(['divide', 'div'], 'Divides the first by the second')
+            else if (['power', 'pow'].includes(cmd)) math_op(['power', 'pow'], 'Raises the first to the second number\'s exponent')
 
 
             else if (cmd === 'string.index') tooltip = '`string.index <index> <string> <destination>`\nGets the nth character from the provided string and places it in the destination in string memory.'
@@ -151,26 +153,26 @@ function activate(context) {
             else if (cmd === 'fs.write') tooltip = '`fs.write <filename_variable> <data_variable>`\nWrites the contents of the specified variable to a file in the filesystem.'
 
 
-            else if (['equals', 'eq', '='].includes(cmd)) cond_op(['equals', 'eq', '='], 'Returns true if the two values are equal')
+            else if (['equals'].includes(cmd)) cond_op(['equals'], 'Returns true if the two values are equal')
 
-            else if (['and', '&'].includes(cmd)) cond_op(['and', '&'], 'Returns true if both values are true')
-            else if (['or', '|'].includes(cmd)) cond_op(['or', '|'], 'Returns true if one of the values is true')
+            else if (['and'].includes(cmd)) cond_op(['and'], 'Returns true if both values are true')
+            else if (['or'].includes(cmd)) cond_op(['or'], 'Returns true if one of the values is true')
 
-            else if (['not', '!'].includes(cmd)) tooltip = ['not', '!'].map(e => '`' + e + ' <destination> <value>`').join('\n') + '\nFetches value from memory, Negates the value, And puts the result into the provided destination address.'
+            else if (['not'].includes(cmd)) tooltip = ['not'].map(e => '`' + e + ' <destination> <value>`').join('\n') + '\nFetches value from memory, Negates the value, And puts the result into the provided destination address.'
 
-            else if (['morethan', 'more', '>'].includes(cmd)) cond_op(['morethan', 'more', '>'], 'Returns true if the first value is more than the second')
-            else if (['lessthan', 'less', '<'].includes(cmd)) cond_op(['lessthan', 'less', '<'], 'Returns true if the first value is less than the second')
+            else if (['morethan', 'more'].includes(cmd)) cond_op(['morethan', 'more'], 'Returns true if the first value is more than the second')
+            else if (['lessthan', 'less'].includes(cmd)) cond_op(['lessthan', 'less'], 'Returns true if the first value is less than the second')
 
-            else if (['morequals', 'meq', '>='].includes(cmd)) cond_op(['morequals', 'meq', '>='], 'Returns true if the first value is more than or equals to the second')
-            else if (['lessequals', 'leq', '<='].includes(cmd)) cond_op(['lessquals', 'leq', '<='], 'Returns true if the first value is less than or equals to the second')
+            else if (['morequals', 'meq'].includes(cmd)) cond_op(['morequals', 'meq'], 'Returns true if the first value is more than or equals to the second')
+            else if (['lessequals', 'leq'].includes(cmd)) cond_op(['lessquals', 'leq'], 'Returns true if the first value is less than or equals to the second')
 
             else if (register_descs[cmd]) tooltip = register_descs[cmd].desc + '\n\n***This command is registered by a 3rd party.***'
 
             //@ts-ignore
-            tooltip = tooltip.split('\n').map(e => `- ${e}`).join('\n').replaceAll(/- `[^`]+`/g, (g) => `\`\`\`egg\n${g.substring(3, g.length - 1)}\n\`\`\``).replaceAll('```\n```egg', '\n').replaceAll(/\n{2,}/g, '\n')
+            tooltip = tooltip.split('\n').map(e => `- ${e}`).join('\n').replaceAll(/- `[^`]+`/g, (g) => `\`\`\`egg\n${g.substring(3, g.length - 1)}\n\`\`\``).replaceAll('```\n```egg\n', '\n').replaceAll(/\n{2,}/g, '\n')
 
             const header = `## ${cmd}`
-            let code = (tooltip.match(/```egg\n([^`]|\n)+\n```/g) ?? ['```egg\n\n```'])[0]
+            let code = (tooltip.match(/```egg\n([^`]|\n)+\n```/g) ?? [''])[0]
 
             //@ts-ignore
             code = code.substring(7, code.length - 4).replaceAll(/\n{2,}/g, '\n')
