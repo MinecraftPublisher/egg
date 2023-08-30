@@ -2,6 +2,8 @@
 
 template mod_io_read() =
 	proc read(): returnAction =
+		expect("1")
+
     	var l = readLine(stdin)
     	var target = args
 
@@ -9,6 +11,8 @@ template mod_io_read() =
 		return returnAction.PEACEFUL
 
 	proc readInt(): returnAction =
+		expect("1")
+		
 		var l = readLine(stdin)
 		var target = args
 

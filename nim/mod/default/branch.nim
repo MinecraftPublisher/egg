@@ -2,6 +2,8 @@
 
 template mod_default_branch() = 
     proc branch(): returnAction =
+		expect("3")
+
     	var addcond = args.split(' ')[0]
 		var trueCase = (
 			if registry.hasKey(args.split(' ')[1]):

@@ -2,16 +2,7 @@
 
 template mod_operations_math() =
 	proc op(handler: (float, float) -> float): returnAction =
-	    var spl = args.split(' ')
-	    if spl.len < 1:
-			SetFailure(fmt"Memory address for destination not provided at line {i.n + 1}")
-			return returnAction.CRITICAL
-	    if spl.len < 2:
-			SetFailure(fmt"Memory address for first integer not provided at line {i.n + 1}")
-			return returnAction.CRITICAL
-	    if spl.len < 3:
-			SetFailure(fmt"Memory address for second integer not provided at line {i.n + 1}")
-			return returnAction.CRITICAL
+	    expect("3")
 
 		var adr1 {.inject.} = spl[1]
 		var adr2 {.inject.} = spl[2]

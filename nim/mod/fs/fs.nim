@@ -2,6 +2,8 @@
 
 template mod_fs() =
     proc d_read(): returnAction =
+        expect("2")
+
         var filename = args.split(' ')[0]
         var dest = args.split(' ')[1]
 
@@ -13,6 +15,8 @@ template mod_fs() =
         return returnAction.PEACEFUL
     
     proc d_write(): returnAction =
+        expect("2")
+
         var filename = args.split(' ')[0]
         var data = args.split(' ')[1]
 

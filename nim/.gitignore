@@ -3,3 +3,4 @@
 dist/egg
 dist/egg.nim
 .history/
+!__builtin__.egg

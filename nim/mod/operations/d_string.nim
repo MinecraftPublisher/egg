@@ -2,16 +2,7 @@
 
 template mod_operations_d_string() =
     proc d_string_split(): returnAction =
-        var spl {.inject.} = args.split(' ')
-        if spl.len < 1:
-            SetFailure(fmt"No arguments provided for split at line {i.n + 1}")
-            return returnAction.CRITICAL
-        if spl.len < 2:
-            SetFailure(fmt"Source string and destination for split not provided at line {i.n + 1}")
-            return returnAction.CRITICAL
-        if spl.len < 3:
-            SetFailure(fmt"Destination string for split not provided at line {i.n + 1}")
-            return returnAction.CRITICAL
+        expect("4")
 
         var sep {.inject.} = spl[0]
         var str {.inject.} = spl[1]
@@ -34,16 +25,7 @@ template mod_operations_d_string() =
             str_memory[dest] = res
     
     proc d_string_index(): returnAction = 
-        var spl {.inject.} = args.split(' ')
-        if spl.len < 1:
-            SetFailure(fmt"No arguments provided for index at line {i.n + 1}")
-            return returnAction.CRITICAL
-        if spl.len < 2:
-            SetFailure(fmt"Source string and destination for index not provided at line {i.n + 1}")
-            return returnAction.CRITICAL
-        if spl.len < 3:
-            SetFailure(fmt"Destination string for index not provided at line {i.n + 1}")
-            return returnAction.CRITICAL
+        expect("3")
 
         var index {.inject.} = spl[0]
         var str {.inject.} = spl[1]
@@ -65,7 +47,8 @@ template mod_operations_d_string() =
                 str_memory[dest] = ""
     
     proc d_string_append(): returnAction =
-        var spl {.inject.} = args.split(' ')
+        expect("3")
+
         var dest {.inject.} = spl[0]
         var str1 {.inject.} = spl[1]
         var str2 {.inject.} = spl[2]

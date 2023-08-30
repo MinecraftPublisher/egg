@@ -40,7 +40,35 @@
 				},
 				{
 					"name": "keyword.control.less",
-					"match": "^\\b(free|branch|if|exit|goto|dump|echo|printf|read|readnum|numread|sleep|mod|eval|add|\\+|subtract|sub|\\-|multiply|mul|\\*|divide|div|\\/|power|pow|\\*\\*|string\\.index|string\\.split|fs\\.read|fs\\.write|equals|eq|\\=|morethan|more|\\>|lessthan|less|\\<|morequals|meq|\\>\\=|lessequals|leq|\\<\\=|and|\\&|or|\\||not|\\!|string\\.append|reg|registry)\\b"
+					"match": "^\\b(equals|eq|morethan|more|lessthan|less|morequals|meq|lessequals|leq|and|or|not)\\b"
+				},
+				{
+					"name": "keyword.control.less",
+					"match": "^\\b(free|branch|if|exit|goto)\\b"
+				},
+				{
+					"name": "keyword.control.less",
+					"match": "^\\b(dump|echo|printf|read|readnum|numread|sleep)\\b"
+				},
+				{
+					"name": "keyword.control.less",
+					"match": "^\\b(mod|eval)\\b"
+				},
+				{
+					"name": "keyword.control.less",
+					"match": "^\\b(add|subtract|sub|multiply|mul|divide|div|power|pow)\\b"
+				},
+				{
+					"name": "keyword.control.less",
+					"match": "^\\b(string\\.index|string\\.split|string\\.append)\\b"
+				},
+				{
+					"name": "keyword.control.less",
+					"match": "^\\b(fs\\.read|fs\\.write)\\b"
+				},
+				{
+					"name": "keyword.control.less",
+					"match": "^\\b(reg|register)\\b"
 				}
 			]
 		}

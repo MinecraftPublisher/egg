@@ -6,6 +6,8 @@ template mod_modules_mod() =
 	}.toTable
 	
 	proc d_mod(): returnAction =
+		expect("1")
+
 		proc getDir(path = "./", depth = 0): string =
 			if dirExists(path) and depth < 5:
 				if dirExists(path & ".egg"):

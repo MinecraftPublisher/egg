@@ -2,6 +2,8 @@
 
 template mod_operations_conditions() =
     proc cond(sthandler {.inject.} : (string, string) -> bool, handler: (float, float) -> bool): returnAction =
+        expect("3")
+        
         var dest = args.split(' ')[0]
         var left {.inject.} = args.split(' ')[1]
         var right {.inject.} = args.split(' ')[2]

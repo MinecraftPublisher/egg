@@ -2,6 +2,8 @@
 
 template mod_io_dump() = 
     proc dump(): returnAction =
+		expect("1")
+
 		if str_memory.hasKey(args.split(' ')[0]): 
 			echo str_memory[args.split(' ')[0]] 
 		elif num_memory.hasKey(args.split(' ')[0]):

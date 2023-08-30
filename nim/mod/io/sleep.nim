@@ -2,6 +2,8 @@
 
 template mod_io_sleep() =
     proc d_sleep(): returnAction =
+        expect("1")
+        
         try:
             var t = parseFloat(args)
             sleep(t.int)

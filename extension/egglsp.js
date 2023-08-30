@@ -43,6 +43,7 @@ module.exports = {
 
 		for (let i = 0; i < 100; i++) str_memory[`a${i + 1}`] = ''
 		for (let i = 0; i < 100; i++) num_memory[`a${i + 1}`] = ''
+		for (let i = 0; i < 100; i++) segments.push(`a${i + 1}`)
 
 		const LSP_CHECK = ((text) => {
 			let lines = text.split('\n')
@@ -115,7 +116,7 @@ module.exports = {
 				let space = (line.match(/[ \t]+/g) ?? [''])[0]?.length
 				let args = line.substring(command?.length + space)
 
-				if (['add', 'subtract', 'multiply', 'divide', 'power', 'sub', 'mul', 'div', 'pow', '+', '-', '*', '/', '**'].includes(command)) {
+				if (['add', 'subtract', 'multiply', 'divide', 'power', 'sub', 'mul', 'div', 'pow'].includes(command)) {
 					num_memory[args.split(' ')[0]] = 0
 				}
 
@@ -196,6 +197,8 @@ module.exports = {
 						}
 					})
 				}
+
+				else if(command === 'exit') {}
 
 				else if (command === 'branch' || command === 'if') {
 					let condition = args.split(' ')[0]
@@ -283,6 +286,7 @@ module.exports = {
 					let matches = args.match(/%{[^} ]+}/g) ?? []
 					for (let match of matches) {
 						let varname = match.substring(2, match?.length - 1)
+
 						if (!(varname in num_memory) && !(varname in str_memory)) diagnosis.push({
 							type: vscode.DiagnosticSeverity.Warning,
 							message: 'Cannot find variable \'' + varname + '\' in eval.',
@@ -291,17 +295,17 @@ module.exports = {
 								end: { line: i, character: line.indexOf(match) + match?.length }
 							}
 						})
+
+						else args = args.replaceAll(match, str_memory[varname] ?? num_memory[varname])
 					}
 
 					//! needs more implementation and pre-guessing to actually be able to check evals
-					//// diagnosis.push(...LSP_CHECK(args))
+					diagnosis.push(...LSP_CHECK(args))
 				}
 
-				else if (command === 'reg' || command === 'register') {
+				else if (command === 'reg' || command === 'register') {}
 
-				}
-
-				else if (['add', 'subtract', 'multiply', 'divide', 'power', 'sub', 'mul', 'div', 'pow', '+', '-', '*', '/', '**'].includes(command)) {
+				else if (['add', 'subtract', 'multiply', 'divide', 'power', 'sub', 'mul', 'div', 'pow'].includes(command)) {
 					//! These commands require more implementations and pre-guessings to support eval since
 					//! I still haven't set anything up to evaluate math expressions before runtime.
 					//! Currently the LSP system just runs over the code and checks variables, Nothing else.
@@ -332,7 +336,7 @@ module.exports = {
 				}
 
 				else if (command === 'string.index') {
-					//TODO IMPLEMENT STRING INDEX
+					//todo implement string index
 					// diagnosis.push({
 					// 	type: vscode.DiagnosticSeverity.Information,
 					// 	message: 'The language features for this command are in beta phase.',
@@ -351,7 +355,7 @@ module.exports = {
 				}
 
 				else if (command === 'string.append') {
-					//TODO IMPLEMENT STRING INDEX
+					//todo implement string index
 					// diagnosis.push({
 					// 	type: vscode.DiagnosticSeverity.Information,
 					// 	message: 'The language features for this command are in beta phase.',
@@ -370,7 +374,7 @@ module.exports = {
 				}
 
 				else if (command === 'string.split') {
-					//TODO IMPLEMENT STRING SPLIT
+					//todo: implement string split
 					// diagnosis.push({
 					// 	type: vscode.DiagnosticSeverity.Information,
 					// 	message: 'The language features for this command are in beta phase.',
@@ -389,29 +393,22 @@ module.exports = {
 					str_memory[dest] = ""
 				}
 
-				else if (command === 'fs.read') {
+				else if (command === 'fs.write' || command === 'fs.read') {
 					let filename = args.split(' ')[0]
-					let dest = args.split(' ')[1]
+					let data = args.split(' ')[1]
 
 					if (!(filename in str_memory)) diagnosis.push({
 						type: vscode.DiagnosticSeverity.Error,
-						message: 'Cannot find variable \'' + filename + '\' for fs.read!',
+						message: 'Cannot find variable \'' + filename + '\' for ' + command + '!',
 						position: {
 							start: { line: i, character: command?.length + space },
 							end: { line: i, character: command?.length + space + filename?.length }
 						}
 					})
 
-					str_memory[dest] = filename
-				}
-
-				else if (command === 'fs.write') {
-					let filename = args.split(' ')[0]
-					let data = args.split(' ')[1]
-
-					if (!(filename in str_memory)) diagnosis.push({
+					if (command === 'fs.write' && !(data in str_memory)) diagnosis.push({
 						type: vscode.DiagnosticSeverity.Error,
-						message: 'Cannot find variable \'' + filename + '\' for fs.read!',
+						message: 'Cannot find data variable \'' + filename + '\' for ' + command + '!',
 						position: {
 							start: { line: i, character: command?.length + space },
 							end: { line: i, character: command?.length + space + filename?.length }
@@ -420,10 +417,10 @@ module.exports = {
 				}
 
 				else if ([
-					'equals', 'eq', '=',
-					'morethan', 'more', '>', 'lessthan', 'less', '<',
-					'morequals', 'meq', '>=', 'lessequals', 'leq', '<=',
-					'and', '&', 'or', '|'
+					'equals', 'eq',
+					'morethan', 'more', 'lessthan', 'less',
+					'morequals', 'meq', 'lessequals', 'leq',
+					'and', 'or'
 				].includes(command)) {
 					//! These commands ALSO require more implementations and pre-guessings to support eval since
 					//! I still haven't set anything up to evaluate conditions before runtime.
@@ -454,7 +451,7 @@ module.exports = {
 					num_memory[dest] = 0
 				}
 
-				else if (['!', 'not'].includes(command)) {
+				else if (command === 'not') {
 					let dest = args.split(' ')[0]
 					let left = args.split(' ')[1]
 
@@ -484,7 +481,7 @@ module.exports = {
 					})
 
 					let c = parseInt(num_memory[val]?.toString())
-					if (c != argc?.length) diagnosis.push({
+					if (c !== argc?.length) diagnosis.push({
 						type: vscode.DiagnosticSeverity.Error,
 						message: 'Expected ' + val + ' arguments but got ' + argc?.length + ' argument(s) for third party function.',
 						position: {

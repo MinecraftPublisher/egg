@@ -1,6 +1,6 @@
 #? replace(sub = "\t", by = "    ")
 
-template importMods() = 
+template importMods() =
     import "default/branch.nim"
     import "default/comment.nim"
     import "default/exit.nim"

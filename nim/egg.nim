@@ -1,8 +1,25 @@
 #? replace(sub = "\t", by = "    ")
 
-const VERSION = "1.5"
+const VERSION = "1.6"
 
-import strformat, strutils, sequtils, tables, re, os, sugar, math, terminal
+import strformat, strutils, sequtils, tables, re, os, sugar, math, terminal, macros
+
+macro tree(a: untyped): untyped =
+	echo a.treeRepr
+
+macro expect(node): untyped =
+    var val {.inject.}: int = parseInt(node.strVal)
+    
+	result = newStmtList()
+	result.add:
+		quote("@") do:
+			var spl {.inject.} = args.split(' ')
+
+    result.add:
+		quote("@") do:
+            if spl.len != @val:
+				SetFailure("Expected " & $(@val) & fmt" argument(s) for the {command} command but got {spl.len} instead")
+				return returnAction.CRITICAL
 
 import "mod/import.nim"
 importMods()
@@ -367,31 +384,14 @@ proc help() =
 
 stdout.resetAttributes()
 
-PROGRAM_REGISTER["__builtin__"] = """#> Builtin functions for the egg language.
-:nothing
-#> Empty segment for branch cases.
-:jmpt
-#> Jump if true
-eval branch a1 %{a2} nothing
-#> Check a1 and if it is true, Jump to a2, Otherwise don't do anything
+macro readBuiltin(node: untyped): untyped =
+	echo "[macro] Bundling binary with builtin egg code..."
+	var builtin = readFile("__builtin__.egg")
 
-:jmpf #> Jump if false
-eval branch a1 nothing %{a2}
-#> Check a1 and if it is false, Jump to a2, Otherwise don't do anything
+	node.strVal = builtin
+	return node
 
-:main
-#> Register "nothing" command
-str::nothing_prompt `nothing`\nDoes nothing.\nUseful for when you do not want to provide a case in the branch command!
-reg nothing 0 nothing_prompt
-
-#> Register "jmpt" command
-str::jmpt_prompt `jmpt <condition> <branch_name>`\nJumps to the provided branch if the condition is true.
-reg jmpt 2 jmpt_prompt
-
-#> Register jmpf command
-str::jmpf_prompt `jmpt <condition> <branch_name>`\nJumps to the provided branch if the condition is false.
-reg jmpf 2 jmpf_prompt
-"""
+PROGRAM_REGISTER["__builtin__"] = readBuiltin("")
 
 if paramCount() > 0:
     var cmd = paramStr(1)
