@@ -1,5 +1,3 @@
-#? replace(sub = "\t", by = "    ")
-
 template mod_operations_d_string() =
     proc d_string_split(): returnAction =
         expect("4")

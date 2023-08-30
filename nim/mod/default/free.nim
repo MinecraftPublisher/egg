@@ -1,5 +1,3 @@
-#? replace(sub = "\t", by = "    ")
-
 template mod_default_free() =
     proc free(): returnAction =
         expect("1")

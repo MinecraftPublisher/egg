@@ -1,5 +1,3 @@
-#? replace(sub = "\t", by = "    ")
-
 template mod_default_comment() =
     proc comment(): returnAction =
         return returnAction.PEACEFUL

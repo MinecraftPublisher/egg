@@ -1,5 +1,3 @@
-#? replace(sub = "\t", by = "    ")
-
 template mod_fs() =
     proc d_read(): returnAction =
         expect("2")

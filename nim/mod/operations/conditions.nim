@@ -1,5 +1,3 @@
-#? replace(sub = "\t", by = "    ")
-
 template mod_operations_conditions() =
     proc cond(sthandler {.inject.} : (string, string) -> bool, handler: (float, float) -> bool): returnAction =
         expect("3")

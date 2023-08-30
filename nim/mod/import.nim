@@ -1,5 +1,3 @@
-#? replace(sub = "\t", by = "    ")
-
 template importMods() =
     import "default/branch.nim"
     import "default/comment.nim"
