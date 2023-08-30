@@ -15,7 +15,56 @@
 			"patterns": [
 				{
 					"name": "keyword.other.unit",
-					"begin": "^:",
+					"begin": "^( |\t)*:",
+					"end": " |\n"
+				},
+				{
+					"name": "keyword.operator",
+					"begin": "^( |\t)*str::",
+					"end": " |\n"
+				},
+				{
+					"name": "keyword.operator",
+					"begin": "^( |\t)*num::",
+					"end": " |\n"
+				},
+				{
+					"name": "keyword.control.less",
+					"match": "^( |\t)*\\b(equals|eq|morethan|more|lessthan|less|morequals|meq|lessequals|leq|and|or|not)\\b"
+				},
+				{
+					"name": "keyword.control.less",
+					"match": "^( |\t)*\\b(free|branch|if|exit|goto)\\b"
+				},
+				{
+					"name": "keyword.control.less",
+					"match": "^( |\t)*\\b(dump|echo|printf|read|readnum|numread|sleep)\\b"
+				},
+				{
+					"name": "keyword.control.less",
+					"match": "^( |\t)*\\b(mod|eval)\\b"
+				},
+				{
+					"name": "keyword.control.less",
+					"match": "^( |\t)*\\b(add|subtract|sub|multiply|mul|divide|div|power|pow)\\b"
+				},
+				{
+					"name": "keyword.control.less",
+					"match": "^\\b(string\\.index|string\\.split|string\\.append)\\b"
+				},
+				{
+					"name": "keyword.control.less",
+					"match": "^( |\t)*\\b(fs\\.read|fs\\.write)\\b"
+				},
+				{
+					"name": "keyword.control.less",
+					"match": "^( |\t)*\\b(reg|register)\\b"
+				},
+
+
+				{
+					"name": "support.type.property-name",
+					"begin": "^( |\t)*#section ",
 					"end": "\n"
 				},
 				{
@@ -27,48 +76,6 @@
 					"name": "comment.block",
 					"begin": "#",
 					"end": "\n"
-				},
-				{
-					"name": "keyword.operator",
-					"begin": "str::",
-					"end": " |\n"
-				},
-				{
-					"name": "keyword.operator",
-					"begin": "num::",
-					"end": " |\n"
-				},
-				{
-					"name": "keyword.control.less",
-					"match": "^\\b(equals|eq|morethan|more|lessthan|less|morequals|meq|lessequals|leq|and|or|not)\\b"
-				},
-				{
-					"name": "keyword.control.less",
-					"match": "^\\b(free|branch|if|exit|goto)\\b"
-				},
-				{
-					"name": "keyword.control.less",
-					"match": "^\\b(dump|echo|printf|read|readnum|numread|sleep)\\b"
-				},
-				{
-					"name": "keyword.control.less",
-					"match": "^\\b(mod|eval)\\b"
-				},
-				{
-					"name": "keyword.control.less",
-					"match": "^\\b(add|subtract|sub|multiply|mul|divide|div|power|pow)\\b"
-				},
-				{
-					"name": "keyword.control.less",
-					"match": "^\\b(string\\.index|string\\.split|string\\.append)\\b"
-				},
-				{
-					"name": "keyword.control.less",
-					"match": "^\\b(fs\\.read|fs\\.write)\\b"
-				},
-				{
-					"name": "keyword.control.less",
-					"match": "^\\b(reg|register)\\b"
 				}
 			]
 		}
