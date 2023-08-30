@@ -23,9 +23,11 @@ reg jmpt 2 jmpt_prompt
 str::jmpf_prompt \`jmpt <condition> <branch_name>\`\\nJumps to the provided branch if the condition is false.
 reg jmpf 2 jmpf_prompt`
 
+const VERSION = '1.6'
+
 /** @type {(document: vscode.TextDocument) => LSP[]}  */
 module.exports = {
-	version: 'beta1.0',
+	version: `basic-${VERSION}`,
 	lsp(document) {
 		let register_descs = {}
 		let __text = document.getText()
@@ -198,7 +200,7 @@ module.exports = {
 					})
 				}
 
-				else if(command === 'exit') {}
+				else if (command === 'exit') { }
 
 				else if (command === 'branch' || command === 'if') {
 					let condition = args.split(' ')[0]
@@ -303,7 +305,7 @@ module.exports = {
 					diagnosis.push(...LSP_CHECK(args))
 				}
 
-				else if (command === 'reg' || command === 'register') {}
+				else if (command === 'reg' || command === 'register') { }
 
 				else if (['add', 'subtract', 'multiply', 'divide', 'power', 'sub', 'mul', 'div', 'pow'].includes(command)) {
 					//! These commands require more implementations and pre-guessings to support eval since
@@ -524,25 +526,41 @@ module.exports = {
 		})
 
 		if (cmd.sync('egg') === true) {
-			LSP_CHECK(child.execSync('egg builtin')?.toString().substring('[0m'?.length))
-			LSP_CHECK(__text)
+			const BINARY_VERSION = child.execSync('egg version').toString().substring('[0m'?.length).trim()
+			if (BINARY_VERSION === `egg-${VERSION}`) {
+				LSP_CHECK(child.execSync('egg builtin')?.toString().substring('[0m'?.length))
+				LSP_CHECK(__text)
 
-			let newer = {}
+				let newer = {}
 
-			for (let re of Object.keys(register_descs)) {
-				let v = register_descs[re]
-				// console.log(register_descs[re].desc
-				newer[re] = {
-					arg: v.arg,
-					desc: str_memory[v.desc]
+				for (let re of Object.keys(register_descs)) {
+					let v = register_descs[re]
+					// console.log(register_descs[re].desc
+					newer[re] = {
+						arg: v.arg,
+						desc: str_memory[v.desc]
+					}
 				}
-			}
 
-			register_descs = { ...newer }
+				register_descs = { ...newer }
 
-			return {
-				diag: diagnosis,
-				reg: register_descs
+				return {
+					diag: diagnosis,
+					reg: register_descs
+				}
+			} else {
+				let lnie = document.getText().split('\n')
+				return {
+					diag: [{
+						type: vscode.DiagnosticSeverity.Error,
+						message: `Incompatible egg binary version! The extension has a version of 'egg-${VERSION}' but the egg binary has a version of '${BINARY_VERSION}'`,
+						position: {
+							start: { line: 0, character: 0 },
+							end: { line: lnie?.length - 1, character: lnie[lnie?.length - 1]?.length }
+						}
+					}],
+					reg: {}
+				}
 			}
 		} else {
 			let lnie = document.getText().split('\n')

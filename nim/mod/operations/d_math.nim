@@ -49,34 +49,29 @@ template mod_operations_math() =
 		return op((a, b) => a + b)
 
 	internals["add"] = d_add
-	internals["+"] = d_add
 
 	proc subtract(): returnAction =
 		return op((a, b) => a - b)
 
 	internals["subtract"] = subtract
 	internals["sub"] = subtract
-	internals["-"] = subtract
 
 	proc multiply(): returnAction =
 		return op((a, b) => a * b)
 
 	internals["multiply"] = multiply
 	internals["mul"] = multiply
-	internals["*"] = multiply
 
 	proc divide(): returnAction =
 		return op((a, b) => a / b)
 
 	internals["divide"] = divide
 	internals["div"] = divide
-	internals["/"] = divide
 
 	proc power(): returnAction =
 		return op((a, b) => pow(a, b))
 
 	internals["power"] = power
 	internals["pow"] = power
-	internals["**"] = power
 
 export mod_operations_math

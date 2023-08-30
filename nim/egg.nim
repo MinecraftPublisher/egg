@@ -370,8 +370,10 @@ proc help() =
 	# THESE GUYS ARE TAB INDENTED!!
 	echo "	egg help			| Shows this panel."
 	echo "	egg repl			| Opens a REPL interface."
+	echo "	egg [files]		 | Executes the specified files."
+
 	echo "	egg builtin 		| Dumps the builtin egg code of the interpreter."
-	echo "	egg [files]		 | Executes the specified files." # this line has weird behavior...?!
+	echo "	egg version 		| Returns the interpreter version in the format of 'egg-<version>'."
 
 # might be used later
 # proc bar() = 
@@ -444,8 +446,12 @@ if paramCount() > 0:
     elif cmd == "compile":
 		# to be implemented!
 		discard
+	
+	elif cmd == "version":
+		echo "egg-" & VERSION
 	elif cmd == "builtin":
 		echo PROGRAM_REGISTER["__builtin__"]
+	
 	else:
 		var registry = initTable[string, Trace]()
 	    var num_memory = populate_num()
