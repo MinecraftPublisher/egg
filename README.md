@@ -1,52 +1,88 @@
 ```
-                                ████████
-                              ██        ██
-                            ██▒▒▒▒        ██
-                          ██▒▒▒▒▒▒      ▒▒▒▒██
-                          ██▒▒▒▒▒▒      ▒▒▒▒██
-                        ██  ▒▒▒▒        ▒▒▒▒▒▒██
-                        ██                ▒▒▒▒██
-                      ██▒▒      ▒▒▒▒▒▒          ██
-                      ██      ▒▒▒▒▒▒▒▒▒▒        ██
-                      ██      ▒▒▒▒▒▒▒▒▒▒    ▒▒▒▒██
-                      ██▒▒▒▒  ▒▒▒▒▒▒▒▒▒▒  ▒▒▒▒▒▒██
-                        ██▒▒▒▒  ▒▒▒▒▒▒    ▒▒▒▒██
-                        ██▒▒▒▒            ▒▒▒▒██
-                          ██▒▒              ██
-                            ████        ████
-                                ████████
+          ████████
+        ██        ██
+      ██▒▒▒▒        ██
+    ██▒▒▒▒▒▒      ▒▒▒▒██
+    ██▒▒▒▒▒▒      ▒▒▒▒██
+  ██  ▒▒▒▒        ▒▒▒▒▒▒██
+  ██                ▒▒▒▒██
+██▒▒      ▒▒▒▒▒▒          ██
+██      ▒▒▒▒▒▒▒▒▒▒        ██
+██      ▒▒▒▒▒▒▒▒▒▒    ▒▒▒▒██
+██▒▒▒▒  ▒▒▒▒▒▒▒▒▒▒  ▒▒▒▒▒▒██
+  ██▒▒▒▒  ▒▒▒▒▒▒    ▒▒▒▒██
+  ██▒▒▒▒            ▒▒▒▒██
+    ██▒▒              ██
+      ████        ████
+          ████████
 ```
-# _@agent\_z_/**egg**
-egg is a **general purpose**, **abstract**, **interpreted**, **type-safe** programming language, with **strict performance** and **manual garbage collection**. egg's syntax is straightforward, and egg's dynamic evaluation also allows to extend the syntax in creative ways.
 
-## installation
-To install egg, Simply run `npm i -g @agent_z/egg`. Want to use another package manager? Check the notice!
+# egg
 
-## cli tool
-The cli tool is your main access point to the egg interpreter. However, Some may find it slow. To switch to a faster, Minimal version, just run `egg minimal` and you will be taken into a familiar, Blazingly fast environment. To upgrade your minimal version incase you made changes to the fancy version or have just ran an update, Run `egg sync` to call the fancy version and update your minimal cli. (**WARNING**: The minimal version requires the fancy version to be ran ATLEAST once, Do not modify the settings in the package itself without building the minimal cli first.)
+egg is a **general purpose**, **abstract**, **interpreted**, **type-safe**
+programming language, with **strict performance** and **manual garbage
+collection**. egg's syntax is straightforward, and egg's dynamic evaluation also
+allows to extend the syntax in creative ways.
 
-## all cli tool commands:
-- [egg] Main, Switchable cli interface
-- [fegg] Always fancy version (**f**ancy **e**gg)
-- [megg] Always minimal version (**m**inimal **e**gg) (REQUIRES fancy version to be ran atleast once)
-- [negg] Nim version, Requires the `nim/` folder's files to be compiled.
+## typescript verdeprecation notice
 
-## List of compatible package managers
-- npm
-- pnpm
-- bun
+The typescript version of egg is deprecated and is not updated with the new
+syntax and features. You should instead use the _nim version_, Which has a more
+flexible syntax and is also supported by the included vscode extension for a
+more streamline development experience.
 
-## Why Yarn doesn't work
-Egg uses [Bun](https://bun.sh/) as its main runtime to cut slack and run the typescript directly and efficiently. So, Bun is naturally included in its dependencies. However, Yarn does not allow linking binaries, So yarn will throw an error and die during the installation process. Any other package manager is fine though!
+## building and installation
 
-## Recommendations
-I recommend you install bun from the official website before installing Egg, As I have not tested wether the bun dependency works well on devices without bun installed or not.
+### requirements
 
-## VScode extensions: Syntax highlighting, Error checking and Hover information
-You should build and install it yourself. The features are documented in the README file in the `extension/` folder.
+To build the nim version, You need a local installation of the nim toolchain,
+With a version of atleast 1.6.12, Alongside the contents of the `nim/` folder.
+Assuming you have the basic unix commands (`rm`, `mv`, `echo`, `sudo`, `cp`)
+installed, A local installation of zsh is also recommended to avoid unexpected
+compatibility issues. You would also need to create a `build/` folder in the
+`nim/` directory. Your directory structure should look like this:
 
-## NIM version
-If you want to have a truly low level experience, You could build the nim version instead. The source code is available at `nim/` in this same directory.
+```diff
++ nim/
+  - run.zsh
+  - egg.nim
+  + mod/
+  - __builtin__.egg
+  + build
+```
 
-## Syntax guide
-Coming soon!
+### building
+
+To build the nim binary for both the release and debug version, Just run
+`zsh run.zsh`, Or any other unix shell you use. The corresponding binaries will
+be placed inside the `build/` folder, So it'll look something like this:
+
+```diff
++ nim/
+  - run.zsh
+  - egg.nim
+  + mod/
+  - __bulitin__.egg
+  + build/
+    - release
+    - debug
+```
+
+After the build is halfway done and you see a multi-line block of text starting
+with `[NOTICE]`, You can optionally write egg to the same directory as your nim
+installation, Assuming it is included in your `$PATH` variable. This is optional
+and does not cause any issues if skipped.
+
+### installation
+
+The build script automatically does this for you, but you can copy either the
+debug or the release binary from the `build/` folder (see **building**), And do
+whatever you want with it!
+
+### syntax guide
+
+Coming soon, Believe me, I'll write this someday!
+
+### legacy typescript version
+
+Check `DEPRECATED.md`.
