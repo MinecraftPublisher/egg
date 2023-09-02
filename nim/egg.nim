@@ -1,6 +1,6 @@
-const VERSION = "1.6"
+const VERSION = "1.7-beta"
 
-import strformat, strutils, sequtils, tables, re, os, sugar, math, terminal, macros
+import strformat, strutils, sequtils, tables, re, os, sugar, math, terminal, macros, osproc
 
 macro tree(a: untyped): untyped =
     echo a.treeRepr
@@ -11,7 +11,10 @@ macro expect(node): untyped =
     result = newStmtList()
     result.add:
         quote("@") do:
-            var spl {.inject.} = args.split(' ')
+            var spl {.inject.} = args.strip().split(' ')
+
+            for k in 0..(spl.len - 1):
+                if spl[k] == "": spl.del(k)
 
     result.add:
         quote("@") do:
@@ -65,7 +68,13 @@ var FailureReason = ""
 proc SetFailure(reason: string) =
     FailureReason = reason
 
-proc Inception(iturn: Return) =
+var TRY_CATCH = false
+
+proc Inception(iturn: Return): Return =
+    if TRY_CATCH:
+        TRY_CATCH = false
+        return iturn
+
     var e: Eggception
     new(e)
 
@@ -132,7 +141,7 @@ proc Inception(iturn: Return) =
     var val = e.stackTrace[e.stackTrace.len - 2]
     # styledEcho fgYellow, styleBright, "[📎] Critical error occured here '", fgCyan, val.program, fgYellow, "' line ", fgCyan, $(val.n + 1)
     styledEcho fgYellow, styleBright, "[❌] CRITICAL ERROR: ", fgCyan, FailureReason, "!"
-    styledEcho fgYellow, styleBright, "[❗️] Critical program exit. Line ", fgRed, fmt"{val.n + 1}", fgYellow, " Program '", fgRed, val.program, fgYellow, "' Content '", fgRed, content, fgYellow, "'"
+    styledEcho fgYellow, styleBright, "[❗️] Critical program exit. Line ", fgRed, fmt"{val.n + 1}", fgYellow, " Program '", fgRed, val.program, fgYellow, "'"
 
     raise e
 
@@ -157,7 +166,9 @@ proc egg(code: string, c_filename: string, c_registry: Registry,
         var line = PROGRAM_REGISTER[i.program].split('\n')[i.n]
 
         line = line.replace(re"^( |\t)*", "")
-        line = line.replace("\\#", "__TAG__").split('#')[0].replace("__TAG__", "#")
+        var line_arr = line.replace("\\#", "__TAG__").split(re"( |\t)*#")
+        if line_arr.len == 0: continue
+        line = line_arr[0].replace("__TAG__", "#")
         if line == "": continue
         trace.add(i)
         stack[stack.len - 1] = i
@@ -186,8 +197,11 @@ proc egg(code: string, c_filename: string, c_registry: Registry,
                         registry[name] = i
                     i.n += 1
 
-                    temp_line = PROGRAM_REGISTER[i.program].split('\n')[i.n]
-                    temp_line = temp_line.replace(re"^( |\t)*", "")
+                    var temp_arr = PROGRAM_REGISTER[i.program].split('\n')
+                    if temp_arr.len > i.n:
+                        temp_line = temp_arr[i.n]
+                        temp_line = temp_line.replace(re"^( |\t)*", "")
+                    else: break
             continue
 
         if line.startsWith("str::"):
@@ -257,6 +271,7 @@ proc egg(code: string, c_filename: string, c_registry: Registry,
         mod_default_free()
         mod_default_exit()
         mod_default_goto()
+        mod_default_clear()
         mod_default_branch()
         mod_default_comment()
 
@@ -267,6 +282,7 @@ proc egg(code: string, c_filename: string, c_registry: Registry,
 
         mod_modules_mod()
         mod_modules_eval()
+        mod_modules_hush()
         mod_modules_register()
 
         mod_operations_math()
@@ -286,13 +302,12 @@ proc egg(code: string, c_filename: string, c_registry: Registry,
             if returnValue == returnAction.CONTINUE: continue
             elif returnValue == returnAction.PEACEFUL: discard
             elif returnValue == returnAction.CRITICAL:
-                Inception(Return(
+                return Inception(Return(
                     stackTrace: trace,
                     registry: registry,
                     num_memory: num_memory,
                     str_memory: str_memory
                 ))
-                return
             elif returnValue == returnAction.EXIT:
                 IS_OFF = true
                 return Return(
@@ -302,18 +317,20 @@ proc egg(code: string, c_filename: string, c_registry: Registry,
                     str_memory: str_memory
                 )
         elif database.hasKey command:
-            var spl = args.split(' ')
+            var spl = args.strip().split(' ')
             var call = database[command]
 
+            for k in 0..(spl.len - 1):
+                if spl[k] == "": spl.del(k)
+
             if spl.len != call.argumentCount:
-                SetFailure(fmt"Expected {call.argumentCount}, But got {spl.len} argument(s)")
-                Inception(Return(
+                SetFailure(fmt"Expected {call.argumentCount} arguments, But got {spl.len} argument(s) instead")
+                return Inception(Return(
                     stackTrace: trace,
                     registry: registry,
                     num_memory: num_memory,
                     str_memory: str_memory
                 ))
-                return
 
             for i in 0..(spl.len - 1):
                 var arg = spl[i]
@@ -329,14 +346,12 @@ proc egg(code: string, c_filename: string, c_registry: Registry,
             continue
         else:
             SetFailure(fmt"Could not spot function '{command}' at line {i.n + 1}")
-
-            Inception(Return(
+            return Inception(Return(
                     stackTrace: trace,
                     registry: registry,
                     num_memory: num_memory,
                     str_memory: str_memory
             ))
-            return
 
     return Return(
         stackTrace: trace,

@@ -28,7 +28,7 @@ template mod_default_branch() =
             return returnAction.CRITICAL
 
         if condition:
-            if trueCase.n == i.n:
+            if trueCase.n == i.n and trueCase.program == i.program:
                 SetFailure(fmt"True case memory address at line {i.n + 1} not provided")
                 return returnAction.CRITICAL
 
@@ -38,7 +38,8 @@ template mod_default_branch() =
             # i.n += 1
             return returnAction.CONTINUE
         else:
-            if falseCase.n == i.n:
+            if falseCase.n == i.n and falseCase.program == i.program:
+                echo falseCase
                 SetFailure(fmt"False case memory address at line {i.n + 1} not provided")
                 return returnAction.CRITICAL
 

@@ -8,7 +8,7 @@ template mod_io_echo() =
                 else: "(null)")
             str = str.replace(mt, res)
         
-        echo str
+        echo str.replace("\n", "")
         return returnAction.PEACEFUL
 
     proc printf(): returnAction =
@@ -20,7 +20,7 @@ template mod_io_echo() =
                 else: "(null)")
             str = str.replace(mt, res)
         
-        stdout.write str
+        stdout.write str.replace("\n", "")
         return returnAction.PEACEFUL
     
     internals["echo"] = d_echo
