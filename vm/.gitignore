@@ -1,0 +1,6 @@
+# ignore built binaries
+build/yolk
+build/pan
+
+# ignore built yolk binaries
+build/**/*.yolk

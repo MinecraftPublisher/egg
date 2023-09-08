@@ -31,6 +31,9 @@ syntax and features. You should instead use the _nim version_, Which has a more
 flexible syntax and is also supported by the included vscode extension for a
 more streamline development experience.
 
+## egg vm (yolk)
+You might have noticed another folder labeled `vm/`, Which is a bytecode execution virtual machine and assembler for yolk, Which is the beta phase of actually compiling yolk programs. It is still very experimental, And any bug reports are truly welcome. Writing documentation for both egg and yolk are also in progress.
+
 ## building and installation
 
 ### requirements
