@@ -24,7 +24,7 @@ programming language, with **strict performance** and **manual garbage
 collection**. egg's syntax is straightforward, and egg's dynamic evaluation also
 allows to extend the syntax in creative ways.
 
-## typescript verdeprecation notice
+## typescript version deprecation notice
 
 The typescript version of egg is deprecated and is not updated with the new
 syntax and features. You should instead use the _nim version_, Which has a more
