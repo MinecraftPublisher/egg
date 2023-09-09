@@ -1,4 +1,5 @@
 #include "file.h"
+#include "settings.h"
 #include "table.h"
 #include "yolk_header.h"
 #include <stdio.h>
@@ -7,18 +8,44 @@
 
 typedef char *string;
 
-enum VM_EXIT_STATUS { VM_EXIT_OK, VM_EXIT_EOF, VM_EXIT_FAILURE };
+typedef unsigned long uint64_t;
+typedef uint64_t      u64;
 
-enum OPCODE {
-    OP_NULL,   //!
-    OP_EXIT,   //!
-    OP_PRINT1, //!
-    OP_STORE,  //!
-    OP_LOAD,   //!
-    OP_CONST,  //!
-    OP_DUMP,   //!
-    OP_WRITE,  //!
-    OP_PRINT   //!
+const string VERSION = "0.1"; //& Version identifier
+
+typedef enum { VM_EXIT_OK, VM_EXIT_EOF, VM_EXIT_FAILURE } VM_EXIT_STATUS;
+
+enum OPCODE { //? A "//!" means the opcode has been implemented.
+    //! NULL()                             - Empty operation
+    OP_NULL,
+    //! EXIT()                             - Stop execution and exit
+    OP_EXIT,
+    //! CHARPRINT(REG)                     - Prints register value
+    OP_CHARPRINT,
+    //! STORE(REG INDEX, REG DATA)         - Places register content in memory
+    OP_STORE,
+    //! LOAD(REG INDEX, REG TARGET)        - Loads value from memory and places it into register
+    OP_LOAD,
+    //! CONST(REG TARGET, U8 ...)          - Adds number constants and places them into memory.
+    OP_CONST,
+    //! DUMP(REG TARGET)                   - Prints the numeric representation of a register.
+    OP_DUMP,
+    //! WRITE(REG TARGET, U8 ...)          - Places data into memory starting from the specified
+    //! target.
+    //!                                      WARNING: Might unexpectedly override data!
+    OP_WRITE,
+    //! PRINT(REG TARGET)                  - Prints characters from memory starting from the
+    //! specified
+    //!                                      target.
+    OP_PRINT,
+    //! MOVE(REG SRC, REG DEST)            - Moves the contents of a register into another register.
+    OP_MOVE,
+    //! ADD(REG LEFT, REG RIGHT, REG DEST) - Adds the contents of the left hand and right hand
+    //!                                      together and places it into the specified target.
+    OP_ADD,
+    //! JUMP(REG POSITION)                 - Jumps to the specified index inside the current
+    //!                                      executable.
+    OP_JUMP
 };
 
 typedef uint8_t u8;
@@ -27,13 +54,13 @@ typedef uint8_t u8;
 
 Table *memoryTable;
 
-enum VM_EXIT_STATUS vm(string code) {
+VM_EXIT_STATUS vm(string code) {
     // initialize pointer
     string pointer      = code;
-    int    pointerIndex = 0;
+    u64    pointerIndex = 0;
 
     // initialize registers
-    u8 registers[ 20 ] = {};
+    u64 registers[ 40 ] = {};
 
     for (;;) {
         u8 *op = (u8 *) READ_BYTE();
@@ -46,6 +73,50 @@ enum VM_EXIT_STATUS vm(string code) {
         enum OPCODE instruction = *op;
         // printf("Got instruction %i at %i\n", instruction, pointerIndex);
         switch (instruction) {
+            case OP_JUMP: { //~ JUMP operator
+                // Jumps to the position in source code indicated by the target register value.
+                // Argument count: 1
+                // Argument 1: Destination register
+
+                u8 label = *READ_BYTE();
+                REGISTER_CHECK(label);
+                u64 index = registers[ label ];
+
+                pointerIndex = index;
+            }
+
+            case OP_ADD: { //~ ADD operator
+                // Adds the contents of the left hand and right hand together and places it into the
+                // specified target. Argument count: 3 Argument 1: Lefthand register Argument 2:
+                // Righthand register Argument 3: Destination register
+
+                u8 left = *READ_BYTE();
+                REGISTER_CHECK(left);
+                u8 right = *READ_BYTE();
+                REGISTER_CHECK(right);
+                u8 target = *READ_BYTE();
+                REGISTER_CHECK(target);
+
+                registers[ target ] = registers[ left ] + registers[ right ];
+
+                continue;
+            }
+
+            case OP_MOVE: { //~ MOVE operator
+                // Moves the data from one register to another.
+                // Argument count: 2
+                // Argument 1: Source register.
+                // Argument 2: Destination register.
+                u8 src = *READ_BYTE();
+                REGISTER_CHECK(src);
+                u8 dst = *READ_BYTE();
+                REGISTER_CHECK(dst);
+
+                registers[ dst ] = registers[ src ];
+
+                continue;
+            }
+
             case OP_CONST: { //~ CONST operator
                 // Puts an integer value inside of a register.
                 // Argument count: 2+
@@ -54,8 +125,9 @@ enum VM_EXIT_STATUS vm(string code) {
                 // with `\0`.
 
                 u8 _register = *READ_BYTE();
-                u8 output    = 0;
-                u8 read      = *READ_BYTE();
+                REGISTER_CHECK(_register);
+                u8 output = 0;
+                u8 read   = *READ_BYTE();
 
                 while (read != 0) {
                     output += read;
@@ -73,8 +145,11 @@ enum VM_EXIT_STATUS vm(string code) {
                 // Argument 1: Register containing the memory address to put the data in.
                 // Arguments 2..n: The numbers to place in the memory, Ends with `\0`.
 
-                u8 memoryAddress = registers[ *READ_BYTE() ];
-                u8 index         = 0;
+                u8 _memoryAddress = *READ_BYTE();
+                REGISTER_CHECK(_memoryAddress);
+                u8 memoryAddress = registers[ _memoryAddress ];
+
+                u8 index = 0;
 
                 u8 read = *READ_BYTE();
 
@@ -87,10 +162,19 @@ enum VM_EXIT_STATUS vm(string code) {
                     }
 
                     // write data to storage
-                    memoryTable->array[ memoryAddress + index ] = read;
+                    memoryTable->array[ memoryAddress + index ] = (u64) read;
+                    printf("\"%i\" %lu\n", read, memoryTable->array[ memoryAddress + index ]);
 
                     // read next byte
                     read = *READ_BYTE();
+                    index++;
+                }
+
+                // memoryTable->array[memoryAddress + index] = 0;
+
+                index = 0;
+                while(memoryTable->array[memoryAddress + index] != 0) {
+                    printf("'%lu'\n", memoryTable->array[memoryAddress + index]);
                     index++;
                 }
 
@@ -103,8 +187,13 @@ enum VM_EXIT_STATUS vm(string code) {
                 // Argument 1: Register containing memory index to place the value in
                 // Argument 2: Register containing the data to put in memory
 
-                u8 memoryDestination = registers[ *READ_BYTE() ];
-                u8 value             = registers[ *READ_BYTE() ];
+                u8 _memoryDestination = *READ_BYTE();
+                REGISTER_CHECK(_memoryDestination);
+                u8 memoryDestination = registers[ _memoryDestination ];
+
+                u8 _value = *READ_BYTE();
+                REGISTER_CHECK(_value);
+                u8 value = registers[ _value ];
 
                 if (memoryTable->table_size < memoryDestination) {
                     u8 oldSize = memoryTable->table_size;
@@ -129,8 +218,12 @@ enum VM_EXIT_STATUS vm(string code) {
                 // Argument 1: Register containing the memory index to be read
                 // Argument 2: The target register
 
-                u8 memoryAddress = registers[ *READ_BYTE() ];
-                u8 target        = *READ_BYTE();
+                u8 _memoryAddress = *READ_BYTE();
+                REGISTER_CHECK(_memoryAddress);
+                u8 memoryAddress = registers[ _memoryAddress ];
+
+                u8 target = *READ_BYTE();
+                REGISTER_CHECK(target);
 
                 if (memoryTable->table_size < memoryAddress) {
                     registers[ target ] = 0;
@@ -147,17 +240,21 @@ enum VM_EXIT_STATUS vm(string code) {
                 // Argument count: 1
                 // Argument 1: The ID of the register to log.
 
-                printf("%i", registers[ *READ_BYTE() ]);
+                u8 registerAddress = *READ_BYTE();
+                REGISTER_CHECK(registerAddress);
+                printf("%lu", registers[ registerAddress ]);
 
                 continue;
             }
 
-            case OP_PRINT1: { //~ PRINT1 operator
+            case OP_CHARPRINT: { //~ CHARPRINT operator
                 // Prints the string value of a register to console.
                 // Argument count: 1
                 // Argument 1: The ID of the register to log.
 
-                printf("%c", registers[ *READ_BYTE() ]);
+                u8 registerAddress = *READ_BYTE();
+                REGISTER_CHECK(registerAddress);
+                printf("%c", (u8) registers[ registerAddress ]);
 
                 continue;
             }
@@ -167,21 +264,22 @@ enum VM_EXIT_STATUS vm(string code) {
                 // memory EOF. Argument count: 1 Argument 1: The register containing the memory
                 // address to read from.
 
-                u8 memoryAddress = registers[ *READ_BYTE() ];
+                u8 _memoryAddress = *READ_BYTE();
+                REGISTER_CHECK(_memoryAddress);
+                u8 memoryAddress = registers[ _memoryAddress ];
                 u8 index         = 0;
 
-                if (memoryTable->table_size < memoryAddress) {
-                    printf("tebel %i\n", memoryTable->table_size);
-                    continue;
-                }
+                if (memoryTable->table_size < memoryAddress) { continue; }
 
-                while (memoryTable->table_size > memoryAddress + index) {
-                    printf("%c", memoryTable->array[ memoryAddress + index ]);
+                u64 arr = memoryTable->array[ memoryAddress + index ];
+                while (memoryTable->table_size > memoryAddress + index && arr != 0) {
+                    printf("%c", (u8) arr);
 
                     index++;
+                    arr = memoryTable->array[ memoryAddress + index ];
                 }
 
-                printf("%c", memoryTable->array[ memoryAddress + index ]);
+                printf("%c", (u8) arr);
 
                 continue;
             }
@@ -200,7 +298,7 @@ enum VM_EXIT_STATUS vm(string code) {
             default: { //~ Unknown operator
                 // Log error and return error
 
-                printf("Unknown opcode: %i ; Position: %i\n", instruction, pointerIndex);
+                printf("Unknown opcode: %i ; Position: %lu\n", instruction, pointerIndex);
                 return VM_EXIT_FAILURE;
             }
         }
@@ -223,11 +321,14 @@ int main(int argc, string *argv) {
     if (file->size == 0) { return 1; }
 
     string yolk_header = YOLK_ELF;
-    u8     header_size = (sizeof(yolk_header) / sizeof(char)) - 1;
+    u8     header_size = strlen(yolk_header);
 
     for (int i = 0; i < header_size; i++) {
         if (file->content[ i ] != yolk_header[ i ]) {
-            printf("Invalid or corrupt yolk binary header ('%i' != '%i')\n", file->content[i], yolk_header[i]);
+            printf(
+                "Invalid or corrupt yolk binary header ('%i' != '%i')\n",
+                file->content[ i ],
+                yolk_header[ i ]);
             return 912;
         }
     }

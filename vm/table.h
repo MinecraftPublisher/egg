@@ -3,14 +3,21 @@
 
 #include <stdlib.h>
 
-typedef char *string;
+#ifndef uint8_t
+typedef unsigned char uint8_t;
+#endif
+
+typedef unsigned long uint64_t;
+typedef uint64_t      u64;
+
+typedef char   *string;
 typedef uint8_t u8;
 
 enum TABLE_TYPE { TABLE_NUMBER, TABLE_STRING };
 
 typedef struct Table {
-    u8 *array;
-    u8     table_size;
+    u64 *array;
+    u64  table_size;
 } Table;
 
 #endif

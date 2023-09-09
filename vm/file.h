@@ -4,6 +4,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#ifndef uint8_t
+typedef unsigned char uint8_t;
+#endif
+
 typedef uint8_t u8;
 typedef char   *string;
 
@@ -13,7 +17,7 @@ typedef struct {
 } File;
 
 File *createFile(u8 size, string content) {
-    File *newFile    = malloc(sizeof(File));
+    File *newFile    = (File*)malloc(sizeof(File));
     newFile->content = content;
     newFile->size    = size;
 
@@ -31,7 +35,7 @@ File *readFile(string fname) {
     const int fsize = ftell(fp);
 
     (void) fseek(fp, 0, SEEK_SET);
-    string b = malloc(fsize);
+    string b = (string)malloc(fsize);
 
     (void) fread(b, fsize, 1, fp);
     (void) fclose(fp);
